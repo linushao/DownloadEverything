@@ -16,6 +16,13 @@ struct DownloadManagerApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.viewContext)
+                #if os(macOS)
+                .frame(minWidth: 900, minHeight: 600)
+                #endif
         }
+        #if os(macOS)
+        .windowStyle(.hiddenTitleBar)
+        .windowToolbarStyle(.unified)
+        #endif
     }
 }
