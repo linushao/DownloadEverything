@@ -25,8 +25,20 @@ struct ActivityView: UIViewControllerRepresentable {
     }
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
+        // 验证分享项
+        let validActivityItems = activityItems.filter { item in
+            if let url = item as? URL {
+                // 对于文件 URL，检查文件是否存在
+                if url.isFileURL {
+                    return FileManager.default.fileExists(atPath: url.path)
+                }
+                return true
+            }
+            return true
+        }
+
         let controller = UIActivityViewController(
-            activityItems: activityItems,
+            activityItems: validActivityItems,
             applicationActivities: applicationActivities
         )
 

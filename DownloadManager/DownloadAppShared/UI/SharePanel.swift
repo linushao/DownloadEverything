@@ -488,7 +488,8 @@ class SharePanelViewModel: ObservableObject {
             shareType = fileItem.type == .folder ? .folder : .file
         } else if let photoItem = selectedPhotoItem {
             // 导出相册资源到临时文件
-            let tempURL = FileUtils.shared.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            let fileExtension = photoItem.type == .video ? "mov" : "jpg"
+            let tempURL = FileUtils.shared.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathExtension(fileExtension)
             photoLibraryManager.exportAsset(assetIdentifier: photoItem.assetIdentifier, to: tempURL) { [weak self] success, _ in
                 guard let self = self, success else { return }
                 

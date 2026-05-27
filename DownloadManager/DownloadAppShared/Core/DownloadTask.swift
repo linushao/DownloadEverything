@@ -90,6 +90,16 @@ public final class DownloadTask: NSObject, Identifiable {
 
     // MARK: - Public Methods
 
+    /// 获取完整的文件路径
+    public var fileURL: URL {
+        savePath.appendingPathComponent(fileName)
+    }
+
+    /// 检查文件是否存在
+    public var fileExists: Bool {
+        FileManager.default.fileExists(atPath: fileURL.path)
+    }
+
     /// 开始下载
     public func start(session: URLSession) {
         guard status == .waiting || status == .failed else { return }

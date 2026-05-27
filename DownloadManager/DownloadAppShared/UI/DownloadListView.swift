@@ -12,6 +12,7 @@ struct DownloadListView: View {
     @State private var selectedTask: DownloadTask?
     @State private var showDetailSheet: Bool = false
     @State private var shareURL: URL?
+    @State private var showFileNotFoundAlert: Bool = false
 
     // MARK: - Task Filter
 
@@ -91,6 +92,11 @@ struct DownloadListView: View {
         }
         .sheet(item: $shareURL) { url in
             ActivityView(activityItems: [url])
+        }
+        .alert("文件不存在", isPresented: $showFileNotFoundAlert) {
+            Button("确定", role: .cancel) {}
+        } message: {
+            Text("要分享的文件不存在，可能已被删除。")
         }
     }
 
@@ -181,8 +187,13 @@ struct DownloadListView: View {
                             onRemove: { viewModel.removeTask(task) },
                             onShare: task.status == .completed
                                 ? {
-                                    shareURL = task.savePath
-                                } : nil
+                                    if task.fileExists {
+                                        shareURL = task.fileURL
+                                    } else {
+                                        showFileNotFoundAlert = true
+                                    }
+                                }
+                                : nil
                         )
                     }
                     .buttonStyle(.plain)

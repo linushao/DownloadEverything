@@ -11,7 +11,9 @@ public final class FileUtils {
 
     /// 获取文档目录路径
     public var documentsDirectory: URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        createDirectoryIfNeeded(at: directory)
+        return directory
     }
 
     /// 获取临时目录路径

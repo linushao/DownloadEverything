@@ -14,6 +14,7 @@ struct DownloadDetailView: View {
 
     @State private var showDeleteConfirmation: Bool = false
     @State private var showShareSheet: Bool = false
+    @State private var showFileNotFoundAlert: Bool = false
 
     // MARK: - Computed Properties
 
@@ -265,7 +266,11 @@ struct DownloadDetailView: View {
             HStack(spacing: 12) {
                 if task.status == .completed {
                     Button(action: {
-                        showShareSheet = true
+                        if task.fileExists {
+                            showShareSheet = true
+                        } else {
+                            showFileNotFoundAlert = true
+                        }
                     }) {
                         Label("分享", systemImage: "square.and.arrow.up")
                     }
@@ -306,7 +311,12 @@ struct DownloadDetailView: View {
         }
         .padding(16)
         .sheet(isPresented: $showShareSheet) {
-            ActivityView(activityItems: [task.savePath])
+            ActivityView(activityItems: [task.fileURL])
+        }
+        .alert("文件不存在", isPresented: $showFileNotFoundAlert) {
+            Button("确定", role: .cancel) {}
+        } message: {
+            Text("要分享的文件不存在，可能已被删除。")
         }
     }
 
