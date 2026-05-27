@@ -71,6 +71,22 @@ public final class DownloadTask: NSObject, Identifiable {
         self.updatedAt = Date()
         super.init()
     }
+    
+    /// 从 CoreData 的 DownloadEntity 初始化
+    public init(entity: DownloadEntity) {
+        self.taskId = entity.taskId
+        self.url = URL(string: entity.url)!
+        self.savePath = URL(fileURLWithPath: entity.savePath)
+        self.fileName = entity.fileName
+        self.totalBytes = entity.totalBytes
+        self.downloadedBytes = entity.downloadedBytes
+        self.status = DownloadStatus(rawValue: entity.status) ?? .waiting
+        self.speed = entity.speed
+        self.createdAt = entity.createdAt
+        self.updatedAt = entity.updatedAt
+        self.resumeData = entity.resumeData
+        super.init()
+    }
 
     // MARK: - Public Methods
 

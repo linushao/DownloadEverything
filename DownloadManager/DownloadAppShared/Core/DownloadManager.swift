@@ -26,7 +26,9 @@ public final class DownloadManager: NSObject {
 
     private var urlSession: URLSession!
     private var activeTasks: [UUID: DownloadTask] = [:]
-    private let queue = DispatchQueue(label: "com.downloadapp.downloadmanager", attributes: .concurrent)
+    private let queue = DispatchQueue(
+        label: "com.downloadapp.downloadmanager", attributes: .concurrent)
+    private let repository = DownloadRepository()
 
     // MARK: - Initialization
 
@@ -34,8 +36,21 @@ public final class DownloadManager: NSObject {
         super.init()
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 60
-        config.timeoutIntervalForResource = 60 * 60 * 24 // 24小时
+        config.timeoutIntervalForResource = 60 * 60 * 24  // 24小时
         urlSession = URLSession(configuration: config, delegate: self, delegateQueue: nil)
+        loadTasksFromCoreData()
+    }
+
+    /// 从 CoreData 加载保存的任务
+    private func loadTasksFromCoreData() {
+        let entities = repository.fetchAllDownloadTasks()
+        for entity in entities {
+            let task = DownloadTask(entity: entity)
+            self.tasks.append(task)
+            if task.status == .downloading || task.status == .waiting {
+                task.status = .paused
+            }
+        }
     }
 
     // MARK: - Public Methods
@@ -53,10 +68,18 @@ public final class DownloadManager: NSObject {
 
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
-            
+
             self.tasks.append(task)
             self.activeTasks[task.taskId] = task
-            
+
+            // 保存到 CoreData
+            self.repository.createDownloadTask(
+                taskId: task.taskId,
+                url: task.url.absoluteString,
+                fileName: task.fileName,
+                savePath: task.savePath.path
+            )
+
             // 检查并发数限制并自动开始下载
             let downloadingCount = self.tasks.filter { $0.status == .downloading }.count
             if downloadingCount < self.maxConcurrentTasks {
@@ -65,9 +88,21 @@ public final class DownloadManager: NSObject {
         }
 
         // 等待异步添加完成
-        queue.sync { }
+        queue.sync {}
 
         return task.taskId
+    }
+
+    /// 同步任务状态到 CoreData
+    private func syncTaskToCoreData(_ task: DownloadTask) {
+        repository.updateDownloadTask(
+            taskId: task.taskId,
+            totalBytes: task.totalBytes,
+            downloadedBytes: task.downloadedBytes,
+            status: task.status.rawValue,
+            speed: task.speed,
+            resumeData: task.getResumeData()
+        )
     }
 
     /// 移除下载任务
@@ -80,6 +115,7 @@ public final class DownloadManager: NSObject {
                 task.cancel()
                 tasks.remove(at: index)
                 activeTasks.removeValue(forKey: taskId)
+                repository.deleteDownloadTask(taskId: taskId)
                 result = true
             }
         }
@@ -94,6 +130,7 @@ public final class DownloadManager: NSObject {
         queue.sync {
             if let task = tasks.first(where: { $0.taskId == taskId }) {
                 task.pause()
+                syncTaskToCoreData(task)
                 result = true
             }
         }
@@ -115,10 +152,12 @@ public final class DownloadManager: NSObject {
             guard downloadingCount < maxConcurrentTasks else {
                 // 达到并发限制，设置为等待状态
                 task.status = .waiting
+                syncTaskToCoreData(task)
                 return
             }
 
             task.resume(session: urlSession)
+            syncTaskToCoreData(task)
             result = true
         }
 
@@ -138,10 +177,12 @@ public final class DownloadManager: NSObject {
             let downloadingCount = tasks.filter { $0.status == .downloading }.count
             guard downloadingCount < maxConcurrentTasks else {
                 task.status = .waiting
+                syncTaskToCoreData(task)
                 return
             }
 
             task.start(session: urlSession)
+            syncTaskToCoreData(task)
             result = true
         }
 
@@ -155,6 +196,7 @@ public final class DownloadManager: NSObject {
         queue.sync {
             if let task = tasks.first(where: { $0.taskId == taskId }) {
                 task.cancel()
+                syncTaskToCoreData(task)
                 result = true
             }
         }
@@ -243,14 +285,24 @@ public final class DownloadManager: NSObject {
     /// 清理已完成的任务
     public func clearCompletedTasks() {
         queue.async(flags: .barrier) { [weak self] in
-            self?.tasks.removeAll { $0.status == .completed }
+            guard let self = self else { return }
+            let completedTasks = self.tasks.filter { $0.status == .completed }
+            for task in completedTasks {
+                self.repository.deleteDownloadTask(taskId: task.taskId)
+            }
+            self.tasks.removeAll { $0.status == .completed }
         }
     }
 
     /// 清理失败的任务
     public func clearFailedTasks() {
         queue.async(flags: .barrier) { [weak self] in
-            self?.tasks.removeAll { $0.status == .failed }
+            guard let self = self else { return }
+            let failedTasks = self.tasks.filter { $0.status == .failed }
+            for task in failedTasks {
+                self.repository.deleteDownloadTask(taskId: task.taskId)
+            }
+            self.tasks.removeAll { $0.status == .failed }
         }
     }
 
@@ -280,9 +332,17 @@ public final class DownloadManager: NSObject {
             // 如果已达到最大重试次数，标记为失败
             if task.retryCount >= self.maxRetryCount {
                 task.status = .failed
-                task.notifyCompletion(result: .failure(task.lastError ?? NSError(domain: "DownloadManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "下载失败"])))
+                self.syncTaskToCoreData(task)
+                task.notifyCompletion(
+                    result: .failure(
+                        task.lastError
+                            ?? NSError(
+                                domain: "DownloadManager", code: -1,
+                                userInfo: [NSLocalizedDescriptionKey: "下载失败"])))
                 return
             }
+
+            self.syncTaskToCoreData(task)
 
             // 延迟重试
             DispatchQueue.main.asyncAfter(deadline: .now() + self.retryDelay) { [weak self] in
@@ -294,6 +354,7 @@ public final class DownloadManager: NSObject {
 
                     task.resetForRetry()
                     task.resume(session: self.urlSession)
+                    self.syncTaskToCoreData(task)
                 }
             }
         }
@@ -304,7 +365,10 @@ public final class DownloadManager: NSObject {
 
 extension DownloadManager: URLSessionDownloadDelegate {
 
-    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+    public func urlSession(
+        _ session: URLSession, downloadTask: URLSessionDownloadTask,
+        didFinishDownloadingTo location: URL
+    ) {
         guard let task = findTask(by: downloadTask) else { return }
 
         // 移动文件到目标路径
@@ -319,6 +383,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
             queue.async(flags: .barrier) {
                 task.status = .completed
                 task.updatedAt = Date()
+                self.syncTaskToCoreData(task)
                 task.notifyCompletion(result: .success(destinationURL))
             }
         } catch {
@@ -326,6 +391,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
                 task.status = .failed
                 task.lastError = error
                 task.updatedAt = Date()
+                self.syncTaskToCoreData(task)
                 task.notifyCompletion(result: .failure(error))
             }
         }
@@ -333,18 +399,25 @@ extension DownloadManager: URLSessionDownloadDelegate {
         startWaitingTasksIfNeeded()
     }
 
-    public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+    public func urlSession(
+        _ session: URLSession, downloadTask: URLSessionDownloadTask,
+        didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64
+    ) {
         guard let task = findTask(by: downloadTask) else { return }
 
         queue.async {
             task.updateDownloadedBytes(totalBytesWritten, totalBytes: totalBytesExpectedToWrite)
             task.checkSpeedLimit(maxSpeed: self.speedLimit)
+            self.syncTaskToCoreData(task)
         }
     }
 
-    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    public func urlSession(
+        _ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?
+    ) {
         guard let downloadTask = task as? URLSessionDownloadTask,
-              let downloadTaskObj = findTask(by: downloadTask) else { return }
+            let downloadTaskObj = findTask(by: downloadTask)
+        else { return }
 
         if let error = error {
             let nsError = error as NSError

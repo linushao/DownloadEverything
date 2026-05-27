@@ -26,9 +26,7 @@ public final class FileUtils {
 
     /// 获取下载目录路径
     public var downloadsDirectory: URL {
-        let url = documentsDirectory.appendingPathComponent("Downloads", isDirectory: true)
-        createDirectoryIfNeeded(at: url)
-        return url
+        return documentsDirectory
     }
 
     // MARK: - 目录操作
@@ -64,7 +62,8 @@ public final class FileUtils {
     /// 获取文件大小
     public func fileSize(at url: URL) -> Int64? {
         guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
-              let size = attributes[.size] as? Int64 else {
+            let size = attributes[.size] as? Int64
+        else {
             return nil
         }
         return size
