@@ -49,7 +49,7 @@
 ### 开发框架
 - **前端**: SwiftUI (跨平台，支持macOS和iOS)
 - **网络层**: URLSession (Apple原生，支持断点续传)
-- **数据库**: SQLite.swift (轻量级SQLite封装)
+- **数据库**: Core Data (Apple官方数据持久化框架)
 - **图片缓存**: 自研实现 (基于NSCache)
 - **压缩解压**: 自研实现 (基于Compression框架)
 
@@ -58,7 +58,7 @@
 - **iOS**: 支持iOS 16+版本
 
 ### 第三方库
-- SQLite.swift (数据库)
+- 无数据库第三方依赖（使用Core Data原生框架）
 - 自研图片缓存
 - 自研压缩解压
 
