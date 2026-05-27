@@ -11,6 +11,7 @@ struct DownloadListView: View {
     @State private var selectedFilter: TaskFilter = .all
     @State private var selectedTask: DownloadTask?
     @State private var showDetailSheet: Bool = false
+    @State private var shareURL: URL?
 
     // MARK: - Task Filter
 
@@ -87,6 +88,9 @@ struct DownloadListView: View {
                     onDismiss: { showDetailSheet = false }
                 )
             }
+        }
+        .sheet(item: $shareURL) { url in
+            ActivityView(activityItems: [url])
         }
     }
 
@@ -174,7 +178,11 @@ struct DownloadListView: View {
                             onPause: { viewModel.pauseTask(task) },
                             onResume: { viewModel.resumeTask(task) },
                             onCancel: { viewModel.cancelTask(task) },
-                            onRemove: { viewModel.removeTask(task) }
+                            onRemove: { viewModel.removeTask(task) },
+                            onShare: task.status == .completed
+                                ? {
+                                    shareURL = task.savePath
+                                } : nil
                         )
                     }
                     .buttonStyle(.plain)

@@ -10,6 +10,7 @@ struct DownloadRowView: View {
     let onResume: () -> Void
     let onCancel: () -> Void
     let onRemove: () -> Void
+    let onShare: (() -> Void)?
 
     @State private var isHovering: Bool = false
 
@@ -57,13 +58,15 @@ struct DownloadRowView: View {
         onPause: @escaping () -> Void,
         onResume: @escaping () -> Void,
         onCancel: @escaping () -> Void,
-        onRemove: @escaping () -> Void
+        onRemove: @escaping () -> Void,
+        onShare: (() -> Void)? = nil
     ) {
         self.task = task
         self.onPause = onPause
         self.onResume = onResume
         self.onCancel = onCancel
         self.onRemove = onRemove
+        self.onShare = onShare
     }
 
     // MARK: - Body
@@ -110,13 +113,21 @@ struct DownloadRowView: View {
         let fileName = task.fileName.lowercased()
         if fileName.hasSuffix(".pdf") {
             return "doc.fill"
-        } else if fileName.hasSuffix(".mp4") || fileName.hasSuffix(".mov") || fileName.hasSuffix(".avi") {
+        } else if fileName.hasSuffix(".mp4") || fileName.hasSuffix(".mov")
+            || fileName.hasSuffix(".avi")
+        {
             return "video.fill"
-        } else if fileName.hasSuffix(".mp3") || fileName.hasSuffix(".wav") || fileName.hasSuffix(".m4a") {
+        } else if fileName.hasSuffix(".mp3") || fileName.hasSuffix(".wav")
+            || fileName.hasSuffix(".m4a")
+        {
             return "music.note"
-        } else if fileName.hasSuffix(".jpg") || fileName.hasSuffix(".jpeg") || fileName.hasSuffix(".png") || fileName.hasSuffix(".gif") {
+        } else if fileName.hasSuffix(".jpg") || fileName.hasSuffix(".jpeg")
+            || fileName.hasSuffix(".png") || fileName.hasSuffix(".gif")
+        {
             return "photo.fill"
-        } else if fileName.hasSuffix(".zip") || fileName.hasSuffix(".rar") || fileName.hasSuffix(".7z") {
+        } else if fileName.hasSuffix(".zip") || fileName.hasSuffix(".rar")
+            || fileName.hasSuffix(".7z")
+        {
             return "doc.zipper"
         } else if fileName.hasSuffix(".dmg") || fileName.hasSuffix(".pkg") {
             return "externaldrive.fill"
@@ -175,6 +186,16 @@ struct DownloadRowView: View {
     @ViewBuilder
     private var actionButtons: some View {
         HStack(spacing: 8) {
+            // 分享按钮（仅在任务完成时显示）
+            if task.status == .completed, let onShare = onShare {
+                Button(action: onShare) {
+                    Image(systemName: "square.and.arrow.up")
+                        .foregroundColor(.blue)
+                }
+                .buttonStyle(.plain)
+                .platformHelp("分享")
+            }
+            
             // 暂停/恢复按钮
             if task.status == .downloading {
                 Button(action: onPause) {

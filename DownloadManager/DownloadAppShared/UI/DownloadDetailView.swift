@@ -13,6 +13,7 @@ struct DownloadDetailView: View {
     let onDismiss: () -> Void
 
     @State private var showDeleteConfirmation: Bool = false
+    @State private var showShareSheet: Bool = false
 
     // MARK: - Computed Properties
 
@@ -262,6 +263,15 @@ struct DownloadDetailView: View {
         HStack(spacing: 12) {
             // 左侧操作按钮
             HStack(spacing: 12) {
+                if task.status == .completed {
+                    Button(action: {
+                        showShareSheet = true
+                    }) {
+                        Label("分享", systemImage: "square.and.arrow.up")
+                    }
+                    .buttonStyle(.bordered)
+                }
+
                 if task.status == .downloading {
                     Button(action: onPause) {
                         Label("暂停", systemImage: "pause.fill")
@@ -295,6 +305,9 @@ struct DownloadDetailView: View {
                 .buttonStyle(.borderedProminent)
         }
         .padding(16)
+        .sheet(isPresented: $showShareSheet) {
+            ActivityView(activityItems: [task.savePath])
+        }
     }
 
     // MARK: - Helper Methods

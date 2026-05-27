@@ -21,8 +21,6 @@ struct PhotoLibraryItem: Identifiable {
     let creationDate: Date?
     /// 修改时间
     let modificationDate: Date?
-    /// 文件大小
-    let fileSize: Int64?
     /// 持续时间（视频专用）
     let duration: TimeInterval?
     
@@ -32,7 +30,6 @@ struct PhotoLibraryItem: Identifiable {
         self.type = asset.mediaType == .video ? .video : .image
         self.creationDate = asset.creationDate
         self.modificationDate = asset.modificationDate
-        self.fileSize = asset.value(forKey: "fileSize") as? Int64
         self.duration = asset.mediaType == .video ? asset.duration : nil
     }
     
