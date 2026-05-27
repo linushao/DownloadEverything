@@ -52,8 +52,16 @@ public final class DownloadManager: NSObject {
         )
 
         queue.async(flags: .barrier) { [weak self] in
-            self?.tasks.append(task)
-            self?.activeTasks[task.taskId] = task
+            guard let self = self else { return }
+            
+            self.tasks.append(task)
+            self.activeTasks[task.taskId] = task
+            
+            // 检查并发数限制并自动开始下载
+            let downloadingCount = self.tasks.filter { $0.status == .downloading }.count
+            if downloadingCount < self.maxConcurrentTasks {
+                task.start(session: self.urlSession)
+            }
         }
 
         // 等待异步添加完成
