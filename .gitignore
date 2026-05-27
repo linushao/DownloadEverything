@@ -1,0 +1,135 @@
+# Xcode
+## Build and Derived Data
+build/
+DerivedData/
+*.xcbuild
+
+## Project and Workspace
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspacedata
+
+## User Interface State
+*.xcuserstate
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+## Scheme Management
+*.xcscheme
+xcschememanagement.plist
+
+## Swift Package Manager
+## Swift Package Manager build artifacts
+.build/
+Packages/
+
+## CocoaPods
+Pods/
+*.xcworkspace
+!*.xcworkspace.sample
+
+## Carthage
+Carthage/Build/
+Carthage/Dependencies/
+
+## macOS
+.DS_Store
+*.log
+*.swp
+*.swo
+*~
+
+## iOS
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## IDE - Xcode
+### Xcode General
+*.hmap
+*.ipa
+*.moved-aside
+*.dSYMs
+
+### Xcode IDE
+*.xcuserstate
+**/.xcuserdata/
+**/UserInterfaceState.xcuserstate
+
+### JetBrains (AppCode)
+*.iml
+.idea/
+
+### VS Code
+.vscode/ !.vscode/settings.json
+.vscode/ !.vscode/tasks.json
+.vscode/ !.vscode/launch.json
+
+### Emacs
+*~
+\#*\#
+.\#*
+
+## Build Logs
+*.plist
+*.cilk
+*.dia
+
+## Temporary Files
+*.tmp
+*.temp
+*.bak
+*.orig
+
+## Swift
+.swiftpm/
+*.xcfilelist
+*.xcodeproj.gen
+*.xcodeproj.project
+*.swiftpm/
+
+## Test Coverage
+*.gcda
+*.gcno
+*.gcov
+
+## Code Coverage
+Profiling*.json
+Coverage.profdata
+*.lcov
+
+## SwiftLint
+.swiftlint.yml
+.swiftlint-results.json
+
+## SPM/Dependency Resolution
+.swiftpm/
+.realm/
+
+## Certificates and Provisioning
+*.cer
+*.mobileprovision
+*.entitlements
+
+## CocoaPods
+Podfile.lock
+Podfile.resolved
+
+## Local Configuration
+**/Localizable.strings
+**/Credentials.plist
+**/* credentials*
+**/*-info.plist
+
+## Crash Logs
+*.crash
+*_crash.log
+
+## SwiftUI Previews Cache
+*.previewsession/
+
+## Archives
+*.zip
+*.tar.gz
+*.dmg
