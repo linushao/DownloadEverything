@@ -69,6 +69,10 @@ public final class DownloadManager: NSObject {
     /// 添加下载任务
     @discardableResult
     public func addTask(url: URL, savePath: URL? = nil, fileName: String? = nil) -> UUID {
+        if url.pathExtension.lowercased() == "m3u8" {
+            return addM3U8Task(url: url, savePath: savePath, fileName: fileName)
+        }
+
         let destinationPath = savePath ?? FileUtils.shared.downloadsDirectory
 
         let task = DownloadTask(

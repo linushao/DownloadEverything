@@ -5,6 +5,7 @@
 //
 
 import Foundation
+import ffmpegkit
 
 // MARK: - TSMergerError
 
@@ -13,7 +14,7 @@ public enum TSMergerError: LocalizedError {
     case mergeFailed(String)
     case cancelled
     case ffmpegNotAvailable
-    
+
     public var errorDescription: String? {
         switch self {
         case .fileNotFound:
@@ -32,17 +33,18 @@ public enum TSMergerError: LocalizedError {
 
 /// TS 分片合并器
 public final class TSMerger {
-    
+
     // MARK: - Properties
-    
+
     private let queue = DispatchQueue(label: "com.downloadapp.tsmerger")
-    
+    private var currentSession: FFmpegSession?
+
     // MARK: - Initialization
-    
+
     public init() {}
-    
+
     // MARK: - Public Methods
-    
+
     /// 合并 TS 分片
     /// - Parameters:
     ///   - segments: 媒体分片列表
@@ -58,7 +60,7 @@ public final class TSMerger {
         // 创建文件列表
         let fileListURL = task.tempDirectory.appendingPathComponent("filelist.txt")
         var fileListContent = ""
-        
+
         for (index, _) in segments.enumerated() {
             let segmentPath = task.tempSegmentPath(for: index).path
             guard FileManager.default.fileExists(atPath: segmentPath) else {
@@ -66,47 +68,49 @@ public final class TSMerger {
             }
             fileListContent += "file '\(segmentPath)'\n"
         }
-        
+
         try fileListContent.write(to: fileListURL, atomically: true, encoding: .utf8)
-        
+
         // 合并文件
         let tempOutputURL = task.tempDirectory.appendingPathComponent("output.ts")
-        try await concatenateFiles(from: fileListURL, to: tempOutputURL, progressHandler: progressHandler)
-        
+        try await concatenateFiles(
+            from: fileListURL, to: tempOutputURL, progressHandler: progressHandler)
+
         // 转换为 MP4
-        try await convertToMP4(input: tempOutputURL, output: outputURL, progressHandler: progressHandler)
-        
+        try await convertToMP4(
+            input: tempOutputURL, output: outputURL, progressHandler: progressHandler)
+
         // 清理临时文件
         try? FileManager.default.removeItem(at: fileListURL)
         try? FileManager.default.removeItem(at: tempOutputURL)
     }
-    
+
     /// 取消合并
     public func cancel() {
-        // 可以在这里添加取消逻辑
+        FFmpegKit.cancel()
     }
-    
+
     // MARK: - Private Methods
-    
-    private func concatenateFiles(from fileListURL: URL, to outputURL: URL, progressHandler: ((Double) -> Void)?) async throws {
-        // 简单的二进制拼接
+
+    private func concatenateFiles(
+        from fileListURL: URL, to outputURL: URL, progressHandler: ((Double) -> Void)?
+    ) async throws {
         let fileManager = FileManager.default
-        
+
         if fileManager.fileExists(atPath: outputURL.path) {
             try fileManager.removeItem(at: outputURL)
         }
-        
+
         fileManager.createFile(atPath: outputURL.path, contents: nil)
-        
+
         guard let handle = FileHandle(forWritingAtPath: outputURL.path) else {
             throw TSMergerError.mergeFailed("无法创建输出文件")
         }
-        
+
         defer {
             handle.closeFile()
         }
-        
-        // 读取文件列表
+
         let fileListContent = try String(contentsOf: fileListURL, encoding: .utf8)
         let lines = fileListContent.components(separatedBy: .newlines)
         let filePaths = lines.compactMap { line -> String? in
@@ -115,32 +119,50 @@ public final class TSMerger {
             let pathPart = String(trimmed.dropFirst(6).dropLast())
             return pathPart
         }
-        
+
         let totalFiles = filePaths.count
         var processedFiles = 0
-        
+
         for filePath in filePaths {
             let fileURL = URL(fileURLWithPath: filePath)
             let data = try Data(contentsOf: fileURL)
             handle.write(data)
-            
+
             processedFiles += 1
-            let progress = Double(processedFiles) / Double(totalFiles) * 0.5 // 拼接占50%
+            let progress = Double(processedFiles) / Double(totalFiles) * 0.5
             progressHandler?(progress)
         }
     }
-    
-    private func convertToMP4(input: URL, output: URL, progressHandler: ((Double) -> Void)?) async throws {
-        // TODO: 这里需要集成 ffmpeg-kit 来进行格式转换
-        // 临时实现：直接重命名文件
+
+    private func convertToMP4(input: URL, output: URL, progressHandler: ((Double) -> Void)?)
+        async throws
+    {
         let fileManager = FileManager.default
-        
+
         if fileManager.fileExists(atPath: output.path) {
             try fileManager.removeItem(at: output)
         }
-        
-        try fileManager.copyItem(at: input, to: output)
-        
-        progressHandler?(1.0)
+
+        let inputPath = input.path
+        let outputPath = output.path
+
+        let ffmpegCommand =
+            "-i \(inputPath) -c:v libx264 -c:a aac -strict experimental -y \(outputPath)"
+
+        guard let session = await FFmpegKit.execute(ffmpegCommand) else {
+            throw TSMergerError.mergeFailed("FFmpeg 执行失败")
+        }
+        currentSession = session
+
+        let returnCode = session.getReturnCode()
+
+        if ReturnCode.isSuccess(returnCode) {
+            progressHandler?(1.0)
+        } else if ReturnCode.isCancel(returnCode) {
+            throw TSMergerError.cancelled
+        } else {
+            let outputMessages = session.getOutput() ?? "未知错误"
+            throw TSMergerError.mergeFailed("FFmpeg 转换失败: \(outputMessages)")
+        }
     }
 }
