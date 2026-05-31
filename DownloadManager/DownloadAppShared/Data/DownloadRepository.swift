@@ -12,7 +12,8 @@ class DownloadRepository {
         taskId: UUID,
         url: String,
         fileName: String,
-        savePath: String
+        savePath: String,
+        isM3U8: Bool = false
     ) -> DownloadEntity {
         let task = DownloadEntity(context: context)
         task.taskId = taskId
@@ -25,6 +26,10 @@ class DownloadRepository {
         task.speed = 0.0
         task.createdAt = Date()
         task.updatedAt = Date()
+        task.segmentCount = 0
+        task.downloadedSegments = 0
+        task.isMerged = false
+        task.isM3U8 = isM3U8
         save()
         return task
     }
@@ -78,6 +83,39 @@ class DownloadRepository {
             task.speed = speed
         }
         task.resumeData = resumeData
+        task.updatedAt = Date()
+        save()
+    }
+    
+    func updateM3U8Task(
+        taskId: UUID,
+        segmentCount: Int64? = nil,
+        downloadedSegments: Int64? = nil,
+        isMerged: Bool? = nil,
+        tempDirectory: String? = nil,
+        status: Int16? = nil,
+        speed: Double? = nil
+    ) {
+        guard let task = fetchDownloadTask(by: taskId) else { return }
+        
+        if let segmentCount = segmentCount {
+            task.segmentCount = segmentCount
+        }
+        if let downloadedSegments = downloadedSegments {
+            task.downloadedSegments = downloadedSegments
+        }
+        if let isMerged = isMerged {
+            task.isMerged = isMerged
+        }
+        if let tempDirectory = tempDirectory {
+            task.tempDirectory = tempDirectory
+        }
+        if let status = status {
+            task.status = status
+        }
+        if let speed = speed {
+            task.speed = speed
+        }
         task.updatedAt = Date()
         save()
     }

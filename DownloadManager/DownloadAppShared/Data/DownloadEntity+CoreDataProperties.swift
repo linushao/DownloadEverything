@@ -18,6 +18,11 @@ extension DownloadEntity {
     @NSManaged public var resumeData: Data?
     @NSManaged public var createdAt: Date
     @NSManaged public var updatedAt: Date
+    @NSManaged public var segmentCount: Int64
+    @NSManaged public var downloadedSegments: Int64
+    @NSManaged public var isMerged: Bool
+    @NSManaged public var tempDirectory: String?
+    @NSManaged public var isM3U8: Bool
 
 }
 

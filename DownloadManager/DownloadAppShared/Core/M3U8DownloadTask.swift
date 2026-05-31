@@ -68,6 +68,8 @@ public final class M3U8DownloadTask: Identifiable, ObservableObject {
     @Published public private(set) var totalSegments: Int = 0
     @Published public private(set) var speed: Double = 0
     @Published public private(set) var error: Error?
+    @Published public private(set) var currentSegmentIndex: Int?
+    @Published public private(set) var currentSegmentURL: URL?
 
     public var playlist: M3U8Playlist?
     public var tempDirectory: URL
@@ -98,6 +100,37 @@ public final class M3U8DownloadTask: Identifiable, ObservableObject {
             taskId.uuidString, isDirectory: true)
         self.createdAt = Date()
         self.updatedAt = Date()
+    }
+
+    /// 从CoreData实体初始化
+    public init?(entity: DownloadEntity) {
+        // 验证URL
+        guard let url = URL(string: entity.url) else {
+            return nil
+        }
+
+        self.taskId = entity.taskId
+        self.url = url
+        self.savePath = URL(fileURLWithPath: entity.savePath)
+        self.fileName =
+            entity.fileName.isEmpty
+            ? url.lastPathComponent.replacingOccurrences(of: ".m3u8", with: ".mp4")
+            : entity.fileName
+        self.tempDirectory = FileUtils.shared.temporaryDirectory.appendingPathComponent(
+            entity.taskId.uuidString, isDirectory: true)
+        self.createdAt = entity.createdAt
+        self.updatedAt = entity.updatedAt
+
+        // 恢复状态
+        self.status = M3U8DownloadStatus(rawValue: entity.status) ?? .pending
+        self.downloadedSegments = Int(entity.downloadedSegments)
+        self.totalSegments = Int(entity.segmentCount)
+        self.speed = entity.speed
+
+        // 恢复临时目录
+        if let tempDirString = entity.tempDirectory {
+            self.tempDirectory = URL(fileURLWithPath: tempDirString)
+        }
     }
 
     // MARK: - Public Methods
@@ -138,6 +171,15 @@ public final class M3U8DownloadTask: Identifiable, ObservableObject {
     public func updateSpeed(_ speed: Double) {
         queue.async(flags: .barrier) { [weak self] in
             self?.speed = speed
+            self?.updatedAt = Date()
+        }
+    }
+
+    /// 更新当前下载的分片
+    public func updateCurrentSegment(index: Int?, url: URL?) {
+        queue.async(flags: .barrier) { [weak self] in
+            self?.currentSegmentIndex = index
+            self?.currentSegmentURL = url
             self?.updatedAt = Date()
         }
     }

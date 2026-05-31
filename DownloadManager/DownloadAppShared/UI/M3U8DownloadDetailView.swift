@@ -60,6 +60,48 @@ struct M3U8DownloadDetailView: View {
         }
     }
 
+    /// 计算预估剩余时间
+    private var estimatedRemainingTime: String? {
+        guard task.status == .downloadingSegments,
+            task.speed > 0,
+            task.totalSegments > 0,
+            task.downloadedSegments < task.totalSegments
+        else {
+            return nil
+        }
+
+        // 假设每个分片大小平均，计算剩余时间
+        let remainingSegments = task.totalSegments - task.downloadedSegments
+
+        // 为了简化，我们暂时使用分片数量和速度来估算
+        // 更准确的估算需要知道每个分片的大小
+        // 这里我们使用一个简化的估算
+        if task.downloadedSegments > 0 {
+            // 根据已下载的进度和时间估算
+            let estimatedTotalTime = Date().timeIntervalSince(task.createdAt) / task.progress
+            let estimatedRemaining = estimatedTotalTime * (1 - task.progress)
+            return formatTimeInterval(estimatedRemaining)
+        }
+
+        return nil
+    }
+
+    /// 格式化时间间隔
+    private func formatTimeInterval(_ interval: TimeInterval) -> String {
+        let seconds = Int(interval)
+        if seconds < 60 {
+            return "\(seconds)秒"
+        } else if seconds < 3600 {
+            let minutes = seconds / 60
+            let secs = seconds % 60
+            return "\(minutes)分\(secs)秒"
+        } else {
+            let hours = seconds / 3600
+            let minutes = (seconds % 3600) / 60
+            return "\(hours)小时\(minutes)分"
+        }
+    }
+
     private var errorMessage: String? {
         task.error?.localizedDescription
     }
@@ -212,6 +254,40 @@ struct M3U8DownloadDetailView: View {
                             .fontWeight(.medium)
                     }
                     .font(.caption)
+
+                    // 预估剩余时间
+                    if let remainingTime = estimatedRemainingTime {
+                        HStack {
+                            Image(systemName: "clock")
+                                .foregroundColor(.secondary)
+                            Text("预计剩余: \(remainingTime)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+
+                // 当前分片信息
+                if let segmentIndex = task.currentSegmentIndex,
+                    let segmentURL = task.currentSegmentURL
+                {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Image(systemName: "doc.text")
+                                .foregroundColor(.blue)
+                            Text("正在下载分片 \(segmentIndex + 1) / \(task.totalSegments)")
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                        }
+                        Text(segmentURL.absoluteString)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                            .truncationMode(.middle)
+                    }
+                    .padding(8)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(8)
                 }
 
                 // 错误信息
@@ -288,7 +364,9 @@ struct M3U8DownloadDetailView: View {
                     .buttonStyle(.bordered)
                 }
 
-                if task.status == .downloadingSegments || task.status == .merging || task.status == .paused || task.status == .pending || task.status == .parsing {
+                if task.status == .downloadingSegments || task.status == .merging
+                    || task.status == .paused || task.status == .pending || task.status == .parsing
+                {
                     Button(action: onCancel) {
                         Label("取消", systemImage: "xmark")
                     }

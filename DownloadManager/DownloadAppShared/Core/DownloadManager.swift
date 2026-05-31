@@ -16,7 +16,11 @@ public final class DownloadManager: NSObject {
     public var maxConcurrentTasks: Int = 4
 
     /// 速度限制（字节/秒），0表示不限速
-    public var speedLimit: Double = 0
+    public var speedLimit: Double = 0 {
+        didSet {
+            m3u8Downloader.speedLimit = speedLimit
+        }
+    }
 
     /// 最大重试次数
     public var maxRetryCount: Int = 3
@@ -52,14 +56,22 @@ public final class DownloadManager: NSObject {
         loadTasksFromCoreData()
     }
 
-    /// 从 CoreData 加载保存的任务
+    /// 从CoreData加载保存的任务
     private func loadTasksFromCoreData() {
         let entities = repository.fetchAllDownloadTasks()
         for entity in entities {
-            let task = DownloadTask(entity: entity)
-            self.tasks.append(task)
-            if task.status == .downloading || task.status == .waiting {
-                task.status = .paused
+            if entity.isM3U8 {
+                // 加载M3U8任务
+                if let task = M3U8DownloadTask(entity: entity) {
+                    self.m3u8Tasks.append(task)
+                }
+            } else {
+                // 加载普通任务
+                let task = DownloadTask(entity: entity)
+                self.tasks.append(task)
+                if task.status == .downloading || task.status == .waiting {
+                    task.status = .paused
+                }
             }
         }
     }
@@ -469,12 +481,12 @@ extension DownloadManager: URLSessionDownloadDelegate {
 
 extension DownloadManager {
 
-    /// 添加 M3U8 下载任务
+    /// 添加M3U8下载任务
     /// - Parameters:
     ///   - url: M3U8 URL
     ///   - savePath: 保存路径（可选，默认下载目录）
-    ///   - fileName: 文件名（可选，默认从 URL 生成）
-    /// - Returns: 任务 ID
+    ///   - fileName: 文件名（可选，默认从URL生成）
+    /// - Returns: 任务ID
     @discardableResult
     public func addM3U8Task(url: URL, savePath: URL? = nil, fileName: String? = nil) -> UUID {
         let destinationPath = savePath ?? FileUtils.shared.downloadsDirectory
@@ -490,6 +502,24 @@ extension DownloadManager {
 
             self.m3u8Tasks.append(task)
 
+            // 保存到CoreData
+            self.repository.createDownloadTask(
+                taskId: task.taskId,
+                url: task.url.absoluteString,
+                fileName: task.fileName,
+                savePath: task.savePath.path,
+                isM3U8: true
+            )
+
+            // 设置进度回调以同步状态
+            task.setProgressHandler { [weak self] progress, downloaded, total in
+                self?.syncM3U8TaskToCoreData(task)
+            }
+
+            task.setCompletionHandler { [weak self] result in
+                self?.syncM3U8TaskToCoreData(task)
+            }
+
             // 开始下载
             Task {
                 await self.m3u8Downloader.start(task: task)
@@ -497,6 +527,19 @@ extension DownloadManager {
         }
 
         return task.taskId
+    }
+
+    /// 同步M3U8任务状态到CoreData
+    private func syncM3U8TaskToCoreData(_ task: M3U8DownloadTask) {
+        repository.updateM3U8Task(
+            taskId: task.taskId,
+            segmentCount: Int64(task.totalSegments),
+            downloadedSegments: Int64(task.downloadedSegments),
+            isMerged: task.status == .completed,
+            tempDirectory: task.tempDirectory.path,
+            status: task.status.rawValue,
+            speed: task.speed
+        )
     }
 
     /// 检查 URL 是否为 M3U8
@@ -523,18 +566,19 @@ extension DownloadManager {
         return result
     }
 
-    /// 暂停 M3U8 任务
-    /// - Parameter taskId: 任务 ID
+    /// 暂停M3U8任务
+    /// - Parameter taskId: 任务ID
     public func pauseM3U8Task(taskId: UUID) {
         queue.sync {
             if let task = m3u8Tasks.first(where: { $0.taskId == taskId }) {
                 m3u8Downloader.pause(task: task)
+                syncM3U8TaskToCoreData(task)
             }
         }
     }
 
-    /// 恢复 M3U8 任务
-    /// - Parameter taskId: 任务 ID
+    /// 恢复M3U8任务
+    /// - Parameter taskId: 任务ID
     public func resumeM3U8Task(taskId: UUID) {
         queue.sync {
             if let task = m3u8Tasks.first(where: { $0.taskId == taskId }) {
@@ -545,8 +589,8 @@ extension DownloadManager {
         }
     }
 
-    /// 取消 M3U8 任务
-    /// - Parameter taskId: 任务 ID
+    /// 取消M3U8任务
+    /// - Parameter taskId: 任务ID
     public func cancelM3U8Task(taskId: UUID) {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
@@ -554,13 +598,14 @@ extension DownloadManager {
             if let index = self.m3u8Tasks.firstIndex(where: { $0.taskId == taskId }) {
                 let task = self.m3u8Tasks[index]
                 self.m3u8Downloader.cancel(task: task)
+                self.repository.deleteDownloadTask(taskId: taskId)
                 self.m3u8Tasks.remove(at: index)
             }
         }
     }
 
-    /// 移除 M3U8 任务
-    /// - Parameter taskId: 任务 ID
+    /// 移除M3U8任务
+    /// - Parameter taskId: 任务ID
     public func removeM3U8Task(taskId: UUID) {
         cancelM3U8Task(taskId: taskId)
     }

@@ -50,6 +50,15 @@ public final class M3U8Downloader {
     /// 最大重试次数
     public var maxRetryCount: Int = 3
 
+    /// 速度限制（字节/秒），0表示不限速
+    public var speedLimit: Double = 0
+
+    /// 速度限制相关
+    private var totalBytesDownloaded: Int64 = 0
+    private var lastSpeedUpdateTime: Date = Date()
+    private var isSpeedLimited: Bool = false
+    private let speedLimitPauseDuration: TimeInterval = 0.1
+
     private let queue = DispatchQueue(
         label: "com.downloadapp.m3u8downloader", attributes: .concurrent)
     private var activeTasks: [UUID: M3U8DownloadTask] = [:]
@@ -244,12 +253,24 @@ public final class M3U8Downloader {
             }
 
             do {
+                // 更新当前分片信息
+                task.updateCurrentSegment(index: index, url: segment.url)
+
                 try await downloadFile(url: segment.url, destination: destinationURL)
                 task.markSegmentDownloaded(index)
+
+                // 检查速度限制
+                await checkSpeedLimit()
+
+                // 清空当前分片信息
+                task.updateCurrentSegment(index: nil, url: nil)
+
                 return
             } catch {
                 remainingRetries -= 1
                 if remainingRetries < 0 {
+                    // 清空当前分片信息
+                    task.updateCurrentSegment(index: nil, url: nil)
                     throw M3U8DownloaderError.downloadFailed(error)
                 }
                 // 等待后重试
@@ -259,14 +280,28 @@ public final class M3U8Downloader {
     }
 
     private func downloadFile(url: URL, destination: URL) async throws {
-        try await withCheckedThrowingContinuation { continuation in
+        var accumulatedBytes: Int64 = 0
+
+        try await withCheckedThrowingContinuation {
+            (continuation: CheckedContinuation<Void, Error>) in
             let destination: DownloadRequest.Destination = { _, _ in
                 return (destination, [.removePreviousFile, .createIntermediateDirectories])
             }
 
             session.download(url, to: destination)
                 .validate()
-                .response { response in
+                .downloadProgress { progress in
+                    accumulatedBytes = progress.completedUnitCount
+                }
+                .response { [weak self] response in
+                    guard let self = self else {
+                        continuation.resume(throwing: M3U8DownloaderError.cancelled)
+                        return
+                    }
+
+                    // 更新总下载字节数
+                    self.totalBytesDownloaded += accumulatedBytes
+
                     switch response.result {
                     case .success:
                         continuation.resume()
@@ -275,6 +310,29 @@ public final class M3U8Downloader {
                     }
                 }
         }
+    }
+
+    /// 检查并应用速度限制
+    private func checkSpeedLimit() async {
+        guard speedLimit > 0 else { return }
+
+        let now = Date()
+        let timeElapsed = now.timeIntervalSince(lastSpeedUpdateTime)
+
+        guard timeElapsed > 0 else { return }
+
+        let currentSpeed = Double(totalBytesDownloaded) / timeElapsed
+
+        if currentSpeed > speedLimit {
+            // 超过速度限制，暂停一下
+            let excessSpeed = currentSpeed - speedLimit
+            let pauseTime = (excessSpeed / speedLimit) * timeElapsed
+            try? await Task.sleep(nanoseconds: UInt64(max(0.01, pauseTime) * 1_000_000_000))
+        }
+
+        // 重置统计
+        lastSpeedUpdateTime = Date()
+        totalBytesDownloaded = 0
     }
 }
 

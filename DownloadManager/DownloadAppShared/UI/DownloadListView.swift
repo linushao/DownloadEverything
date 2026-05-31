@@ -8,6 +8,8 @@ struct DownloadListView: View {
     @StateObject private var viewModel = DownloadListViewModel()
     @State private var showAddTaskSheet: Bool = false
     @State private var newTaskURL: String = ""
+    @State private var suggestedFileName: String = ""
+    @State private var isLoadingSuggestedName: Bool = false
     @State private var selectedFilter: TaskFilter = .all
     @State private var selectedTask: DownloadTask?
     @State private var selectedM3U8Task: M3U8DownloadTask?
@@ -17,6 +19,8 @@ struct DownloadListView: View {
     @State private var showFileNotFoundAlert: Bool = false
     @State private var previewImageURL: URL?
     @State private var previewFileName: String = ""
+
+    private let m3u8Parser = M3U8Parser()
 
     // MARK: - Task Filter
 
@@ -332,16 +336,43 @@ struct DownloadListView: View {
                         }
                     #endif
                 }
+                .onChange(of: newTaskURL) { _, newValue in
+                    Task {
+                        await loadSuggestedFileName(urlString: newValue)
+                    }
+                }
 
-            // 显示m3u8识别提示
+            // 显示m3u8识别提示和文件名建议
             if isM3U8URL(newTaskURL) {
-                HStack(spacing: 6) {
-                    Image(systemName: "video.fill")
-                        .foregroundColor(.blue)
-                    Text("已识别为 HLS 视频流")
-                        .font(.callout)
-                        .foregroundColor(.blue)
-                    Spacer()
+                VStack(spacing: 12) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "video.fill")
+                            .foregroundColor(.blue)
+                        Text("已识别为 HLS 视频流")
+                            .font(.callout)
+                            .foregroundColor(.blue)
+                        Spacer()
+                    }
+
+                    if isLoadingSuggestedName {
+                        HStack {
+                            ProgressView()
+                                .controlSize(.small)
+                            Text("正在解析文件名...")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                        }
+                    } else if !suggestedFileName.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("建议文件名:")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            TextField("", text: $suggestedFileName)
+                                .textFieldStyle(.roundedBorder)
+                                .font(.subheadline)
+                        }
+                    }
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -358,19 +389,22 @@ struct DownloadListView: View {
             HStack(spacing: 16) {
                 Button("取消") {
                     newTaskURL = ""
+                    suggestedFileName = ""
                     showAddTaskSheet = false
                 }
                 .buttonStyle(.bordered)
 
                 Button("添加") {
-                    viewModel.addTask(urlString: newTaskURL)
+                    let fileName = !suggestedFileName.isEmpty ? suggestedFileName : nil
+                    viewModel.addTask(urlString: newTaskURL, fileName: fileName)
                     if viewModel.errorMessage == nil {
                         newTaskURL = ""
+                        suggestedFileName = ""
                         showAddTaskSheet = false
                     }
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(newTaskURL.isEmpty)
+                .disabled(newTaskURL.isEmpty || isLoadingSuggestedName)
                 .accessibilityIdentifier("ConfirmAddButton")
             }
             .padding(.bottom, 20)
@@ -383,5 +417,24 @@ struct DownloadListView: View {
         let pathExtension = url.pathExtension.lowercased()
         return pathExtension == "m3u8" || pathExtension == "m3u"
             || urlString.lowercased().contains("m3u8")
+    }
+
+    private func loadSuggestedFileName(urlString: String) async {
+        guard !urlString.isEmpty, isM3U8URL(urlString), let url = URL(string: urlString) else {
+            suggestedFileName = ""
+            return
+        }
+
+        isLoadingSuggestedName = true
+        defer { isLoadingSuggestedName = false }
+
+        do {
+            let fileName = try await m3u8Parser.parseAndSuggestFileName(url: url)
+            suggestedFileName = fileName
+        } catch {
+            // 如果解析失败，使用默认的文件名生成方式
+            let defaultName = url.lastPathComponent.replacingOccurrences(of: ".m3u8", with: ".mp4")
+            suggestedFileName = defaultName.isEmpty ? "video.mp4" : defaultName
+        }
     }
 }
