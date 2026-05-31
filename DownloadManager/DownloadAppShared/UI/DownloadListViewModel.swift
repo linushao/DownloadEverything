@@ -1,5 +1,5 @@
-import Foundation
 import Combine
+import Foundation
 
 /// DownloadList视图模型，负责与DownloadManager交互
 @MainActor
@@ -8,6 +8,7 @@ final class DownloadListViewModel: ObservableObject {
     // MARK: - Published Properties
 
     @Published var tasks: [DownloadTask] = []
+    @Published var m3u8Tasks: [M3U8DownloadTask] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
@@ -33,6 +34,7 @@ final class DownloadListViewModel: ObservableObject {
     /// 加载所有任务
     func loadTasks() {
         tasks = downloadManager.getAllTasks()
+        m3u8Tasks = downloadManager.m3u8Tasks
     }
 
     /// 添加下载任务
@@ -77,12 +79,18 @@ final class DownloadListViewModel: ObservableObject {
     /// 暂停所有任务
     func pauseAllTasks() {
         downloadManager.pauseAll()
+        for task in m3u8Tasks {
+            downloadManager.pauseM3U8Task(taskId: task.taskId)
+        }
         loadTasks()
     }
 
     /// 恢复所有任务
     func resumeAllTasks() {
         downloadManager.resumeAll()
+        for task in m3u8Tasks {
+            downloadManager.resumeM3U8Task(taskId: task.taskId)
+        }
         loadTasks()
     }
 
@@ -114,10 +122,39 @@ final class DownloadListViewModel: ObservableObject {
         return formatter.string(fromByteCount: Int64(bytesPerSecond)) + "/s"
     }
 
+    /// 暂停m3u8任务
+    func pauseM3U8Task(_ task: M3U8DownloadTask) {
+        downloadManager.pauseM3U8Task(taskId: task.taskId)
+        loadTasks()
+    }
+
+    /// 恢复m3u8任务
+    func resumeM3U8Task(_ task: M3U8DownloadTask) {
+        downloadManager.resumeM3U8Task(taskId: task.taskId)
+        loadTasks()
+    }
+
+    /// 取消m3u8任务
+    func cancelM3U8Task(_ task: M3U8DownloadTask) {
+        downloadManager.cancelM3U8Task(taskId: task.taskId)
+        loadTasks()
+    }
+
+    /// 删除m3u8任务
+    func removeM3U8Task(_ task: M3U8DownloadTask) {
+        downloadManager.removeM3U8Task(taskId: task.taskId)
+        loadTasks()
+    }
+
     /// 计算进度百分比
     func progressPercentage(for task: DownloadTask) -> Double {
         guard task.totalBytes > 0 else { return 0 }
         return Double(task.downloadedBytes) / Double(task.totalBytes) * 100
+    }
+
+    /// 计算m3u8进度百分比
+    func progressPercentage(for task: M3U8DownloadTask) -> Double {
+        task.progress
     }
 
     // MARK: - Private Methods

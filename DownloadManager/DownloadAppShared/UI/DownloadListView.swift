@@ -10,7 +10,9 @@ struct DownloadListView: View {
     @State private var newTaskURL: String = ""
     @State private var selectedFilter: TaskFilter = .all
     @State private var selectedTask: DownloadTask?
+    @State private var selectedM3U8Task: M3U8DownloadTask?
     @State private var showDetailSheet: Bool = false
+    @State private var showM3U8DetailSheet: Bool = false
     @State private var shareURL: URL?
     @State private var showFileNotFoundAlert: Bool = false
     @State private var previewImageURL: URL?
@@ -71,7 +73,8 @@ struct DownloadListView: View {
             Divider()
 
             // 列表内容
-            if filteredTasks.isEmpty {
+            let allTasks = filteredTasks + viewModel.m3u8Tasks.map { $0 as Any }
+            if allTasks.isEmpty {
                 emptyStateView
             } else {
                 taskList
@@ -89,6 +92,18 @@ struct DownloadListView: View {
                     onCancel: { viewModel.cancelTask(task) },
                     onRemove: { viewModel.removeTask(task) },
                     onDismiss: { showDetailSheet = false }
+                )
+            }
+        }
+        .sheet(isPresented: $showM3U8DetailSheet) {
+            if let task = selectedM3U8Task {
+                M3U8DownloadDetailView(
+                    task: task,
+                    onPause: { viewModel.pauseM3U8Task(task) },
+                    onResume: { viewModel.resumeM3U8Task(task) },
+                    onCancel: { viewModel.cancelM3U8Task(task) },
+                    onRemove: { viewModel.removeM3U8Task(task) },
+                    onDismiss: { showM3U8DetailSheet = false }
                 )
             }
         }
@@ -189,6 +204,7 @@ struct DownloadListView: View {
     private var taskList: some View {
         ScrollView {
             LazyVStack(spacing: 4) {
+                // 显示普通任务
                 ForEach(filteredTasks) { task in
                     Button {
                         if task.status == .completed && task.fileName.isImageFile {
@@ -225,6 +241,38 @@ struct DownloadListView: View {
                                     showDetailSheet = true
                                 }
                                 : nil
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                // 显示m3u8任务
+                ForEach(viewModel.m3u8Tasks) { task in
+                    Button {
+                        selectedM3U8Task = task
+                        showM3U8DetailSheet = true
+                    } label: {
+                        M3U8DownloadRowView(
+                            task: task,
+                            onPause: { viewModel.pauseM3U8Task(task) },
+                            onResume: { viewModel.resumeM3U8Task(task) },
+                            onCancel: { viewModel.cancelM3U8Task(task) },
+                            onRemove: { viewModel.removeM3U8Task(task) },
+                            onShare: task.status == .completed
+                                ? {
+                                    let fileURL = task.savePath.appendingPathComponent(
+                                        task.fileName)
+                                    if FileManager.default.fileExists(atPath: fileURL.path) {
+                                        shareURL = fileURL
+                                    } else {
+                                        showFileNotFoundAlert = true
+                                    }
+                                }
+                                : nil,
+                            onDetailTap: {
+                                selectedM3U8Task = task
+                                showM3U8DetailSheet = true
+                            }
                         )
                     }
                     .buttonStyle(.plain)
@@ -274,14 +322,32 @@ struct DownloadListView: View {
                 .frame(minWidth: 200, idealWidth: 400, maxWidth: .infinity)
                 .accessibilityIdentifier("URLTextField")
                 .onAppear {
-                    if let clipboardString = UIPasteboard.general.string,
-                        !clipboardString.isEmpty,
-                        URL(string: clipboardString) != nil,
-                        newTaskURL.isEmpty
-                    {
-                        newTaskURL = clipboardString
-                    }
+                    #if os(iOS)
+                        if let clipboardString = UIPasteboard.general.string,
+                            !clipboardString.isEmpty,
+                            URL(string: clipboardString) != nil,
+                            newTaskURL.isEmpty
+                        {
+                            newTaskURL = clipboardString
+                        }
+                    #endif
                 }
+
+            // 显示m3u8识别提示
+            if isM3U8URL(newTaskURL) {
+                HStack(spacing: 6) {
+                    Image(systemName: "video.fill")
+                        .foregroundColor(.blue)
+                    Text("已识别为 HLS 视频流")
+                        .font(.callout)
+                        .foregroundColor(.blue)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+            }
 
             if let error = viewModel.errorMessage {
                 Text(error)
@@ -310,5 +376,12 @@ struct DownloadListView: View {
             .padding(.bottom, 20)
         }
         .padding(.horizontal, 20)
+    }
+
+    private func isM3U8URL(_ urlString: String) -> Bool {
+        guard let url = URL(string: urlString) else { return false }
+        let pathExtension = url.pathExtension.lowercased()
+        return pathExtension == "m3u8" || pathExtension == "m3u"
+            || urlString.lowercased().contains("m3u8")
     }
 }
