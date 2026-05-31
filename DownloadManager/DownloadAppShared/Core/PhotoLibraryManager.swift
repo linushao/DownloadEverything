@@ -50,6 +50,11 @@ struct PhotoLibraryItem: Identifiable {
         let seconds = Int(duration) % 60
         return String(format: "%d:%02d", minutes, seconds)
     }
+    
+    /// 缩略图URL（用于Kingfisher加载）
+    var thumbnailURL: URL {
+        URL(string: "phasset://\(assetIdentifier)")!
+    }
 }
 
 /// 相册管理器，用于访问系统相册

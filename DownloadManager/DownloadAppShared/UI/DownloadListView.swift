@@ -13,6 +13,8 @@ struct DownloadListView: View {
     @State private var showDetailSheet: Bool = false
     @State private var shareURL: URL?
     @State private var showFileNotFoundAlert: Bool = false
+    @State private var previewImageURL: URL?
+    @State private var previewFileName: String = ""
 
     // MARK: - Task Filter
 
@@ -93,6 +95,14 @@ struct DownloadListView: View {
         .sheet(item: $shareURL) { url in
             ActivityView(activityItems: [url])
         }
+        .sheet(
+            isPresented: .init(
+                get: { previewImageURL != nil }, set: { if !$0 { previewImageURL = nil } })
+        ) {
+            if let url = previewImageURL {
+                ImagePreviewView(imageURL: url, fileName: previewFileName)
+            }
+        }
         .alert("文件不存在", isPresented: $showFileNotFoundAlert) {
             Button("确定", role: .cancel) {}
         } message: {
@@ -107,6 +117,7 @@ struct DownloadListView: View {
             // 添加按钮
             Button(action: { showAddTaskSheet = true }) {
                 Label("添加任务", systemImage: "plus")
+                    .font(.system(size: 13))
             }
             .buttonStyle(.bordered)
             .accessibilityIdentifier("AddDownloadButton")
@@ -117,11 +128,13 @@ struct DownloadListView: View {
             HStack(spacing: 12) {
                 Button(action: { viewModel.resumeAllTasks() }) {
                     Label("全部恢复", systemImage: "play.fill")
+                        .font(.system(size: 13))
                 }
                 .buttonStyle(.bordered)
 
                 Button(action: { viewModel.pauseAllTasks() }) {
                     Label("全部暂停", systemImage: "pause.fill")
+                        .font(.system(size: 13))
                 }
                 .buttonStyle(.bordered)
 
@@ -134,6 +147,7 @@ struct DownloadListView: View {
                     }
                 } label: {
                     Label("更多", systemImage: "ellipsis.circle")
+                        .font(.system(size: 13))
                 }
                 .buttonStyle(.bordered)
             }
@@ -177,8 +191,17 @@ struct DownloadListView: View {
             LazyVStack(spacing: 4) {
                 ForEach(filteredTasks) { task in
                     Button {
-                        selectedTask = task
-                        showDetailSheet = true
+                        if task.status == .completed && task.fileName.isImageFile {
+                            if task.fileExists {
+                                previewImageURL = task.fileURL
+                                previewFileName = task.fileName
+                            } else {
+                                showFileNotFoundAlert = true
+                            }
+                        } else {
+                            selectedTask = task
+                            showDetailSheet = true
+                        }
                     } label: {
                         DownloadRowView(
                             task: task,
@@ -193,6 +216,13 @@ struct DownloadListView: View {
                                     } else {
                                         showFileNotFoundAlert = true
                                     }
+                                }
+                                : nil,
+                            onPreview: nil,
+                            onDetailTap: task.status == .completed && task.fileName.isImageFile
+                                ? {
+                                    selectedTask = task
+                                    showDetailSheet = true
                                 }
                                 : nil
                         )
@@ -243,6 +273,15 @@ struct DownloadListView: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(minWidth: 200, idealWidth: 400, maxWidth: .infinity)
                 .accessibilityIdentifier("URLTextField")
+                .onAppear {
+                    if let clipboardString = UIPasteboard.general.string,
+                        !clipboardString.isEmpty,
+                        URL(string: clipboardString) != nil,
+                        newTaskURL.isEmpty
+                    {
+                        newTaskURL = clipboardString
+                    }
+                }
 
             if let error = viewModel.errorMessage {
                 Text(error)

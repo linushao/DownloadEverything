@@ -1,3 +1,4 @@
+import Kingfisher
 import SwiftUI
 
 /// 下载任务行视图组件
@@ -11,6 +12,8 @@ struct DownloadRowView: View {
     let onCancel: () -> Void
     let onRemove: () -> Void
     let onShare: (() -> Void)?
+    let onPreview: (() -> Void)?
+    let onDetailTap: (() -> Void)?
 
     @State private var isHovering: Bool = false
 
@@ -59,7 +62,9 @@ struct DownloadRowView: View {
         onResume: @escaping () -> Void,
         onCancel: @escaping () -> Void,
         onRemove: @escaping () -> Void,
-        onShare: (() -> Void)? = nil
+        onShare: (() -> Void)? = nil,
+        onPreview: (() -> Void)? = nil,
+        onDetailTap: (() -> Void)? = nil
     ) {
         self.task = task
         self.onPause = onPause
@@ -67,6 +72,13 @@ struct DownloadRowView: View {
         self.onCancel = onCancel
         self.onRemove = onRemove
         self.onShare = onShare
+        self.onPreview = onPreview
+        self.onDetailTap = onDetailTap
+    }
+
+    /// 判断是否为图片文件
+    private var isImageFile: Bool {
+        task.fileName.isImageFile
     }
 
     // MARK: - Body
@@ -196,7 +208,18 @@ struct DownloadRowView: View {
                 .platformHelp("分享")
                 .accessibilityIdentifier("ShareButton")
             }
-            
+
+            // 预览按钮（仅在任务完成且是图片文件时显示）- 互换后点击触发任务详情
+            if task.status == .completed, isImageFile, let onDetailTap = onDetailTap {
+                Button(action: onDetailTap) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.green)
+                }
+                .buttonStyle(.plain)
+                .platformHelp("详情")
+                .accessibilityIdentifier("PreviewButton")
+            }
+
             // 暂停/恢复按钮
             if task.status == .downloading {
                 Button(action: onPause) {

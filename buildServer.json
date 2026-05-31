@@ -12,8 +12,8 @@
 	"argv": [
 		"/opt/homebrew/bin/xcode-build-server"
 	],
-	"workspace": "/Users/acewei/workspace/DownloadApp/DownloadManager.xcodeproj/project.xcworkspace",
-	"build_root": "/Users/acewei/Library/Developer/Xcode/DerivedData/DownloadManager-aiudflmskgbjfkhkhwcoohneftxc",
+	"workspace": "/Users/acewei/Documents/DownloadApp/DownloadManager.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/acewei/Library/Developer/Xcode/DerivedData/DownloadManager-ezgmesomwgyydcbmvxgvcuxbpqos",
 	"scheme": "DownloadManager",
 	"kind": "xcode"
 }

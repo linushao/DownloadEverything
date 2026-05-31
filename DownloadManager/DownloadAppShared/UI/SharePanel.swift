@@ -1,31 +1,32 @@
+import Kingfisher
 import SwiftUI
 
 /// 分享面板视图
 struct SharePanel: View {
     @Environment(\.dismiss) private var dismiss
-    
+
     /// 选中的文件/文件夹
     let selectedFile: FileItem?
-    
+
     /// 选中的相册项
     let selectedPhoto: PhotoLibraryItem?
-    
+
     /// 分享完成回调
     var onShareComplete: ((ShareItem) -> Void)?
-    
+
     @StateObject private var viewModel = SharePanelViewModel()
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 // 源选择
                 sourcePicker
-                
+
                 Divider()
-                
+
                 // 内容区域
                 contentArea
-                
+
                 // 底部操作栏
                 if viewModel.selectedItem != nil {
                     Divider()
@@ -110,9 +111,9 @@ extension SharePanel {
                     }
                     .pickerStyle(.menu)
                 }
-                
+
                 Spacer()
-                
+
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("过期时间")
                         .font(.caption)
@@ -127,7 +128,7 @@ extension SharePanel {
                 }
             }
             .padding(.horizontal)
-            
+
             // 创建分享按钮
             Button(action: {
                 viewModel.createShare()
@@ -154,19 +155,19 @@ extension SharePanel {
 
 struct FileBrowserView: View {
     @ObservedObject var viewModel: SharePanelViewModel
-    
+
     var body: some View {
         VStack(spacing: 0) {
             // 路径栏
             pathBar
-            
+
             Divider()
-            
+
             // 文件列表
             fileList
         }
     }
-    
+
     private var pathBar: some View {
         HStack {
             Button(action: {
@@ -175,15 +176,15 @@ struct FileBrowserView: View {
                 Image(systemName: "chevron.left")
             }
             .disabled(viewModel.currentDirectoryParent == nil)
-            
+
             Text(viewModel.currentDirectory?.lastPathComponent ?? "根目录")
                 .font(.headline)
-            
+
             Spacer()
         }
         .padding()
     }
-    
+
     private var fileList: some View {
         List(viewModel.currentFiles, selection: $viewModel.selectedFileItem) { item in
             FileItemRow(item: item, isSelected: viewModel.selectedFileItem?.id == item.id)
@@ -201,27 +202,27 @@ struct FileBrowserView: View {
 struct FileItemRow: View {
     let item: FileItem
     let isSelected: Bool
-    
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: item.iconName)
                 .font(.title2)
                 .foregroundColor(.blue)
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.name)
                     .font(.body)
                     .lineLimit(1)
-                
+
                 if item.type == .file {
                     Text(item.formattedSize)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
-            
+
             Spacer()
-            
+
             if isSelected {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.blue)
@@ -236,13 +237,13 @@ struct FileItemRow: View {
 
 struct PhotoBrowserView: View {
     @ObservedObject var viewModel: SharePanelViewModel
-    
+
     private let columns = [
         GridItem(.flexible(), spacing: 4),
         GridItem(.flexible(), spacing: 4),
-        GridItem(.flexible(), spacing: 4)
+        GridItem(.flexible(), spacing: 4),
     ]
-    
+
     var body: some View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 4) {
@@ -260,30 +261,28 @@ struct PhotoBrowserView: View {
 struct PhotoItemCell: View {
     let item: PhotoLibraryItem
     @ObservedObject var viewModel: SharePanelViewModel
-    @State private var thumbnail: UIImage?
-    
+
     var isSelected: Bool {
         viewModel.selectedPhotoItem?.id == item.id
     }
-    
+
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            if let thumbnail = thumbnail {
-                Image(uiImage: thumbnail)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(height: 120)
-                    .clipped()
-            } else {
-                Color(.systemGray5)
-                    .frame(height: 120)
-                    .overlay(
-                        Image(systemName: item.iconName)
-                            .font(.largeTitle)
-                            .foregroundColor(.white)
-                    )
-            }
-            
+            KFImage(source: .provider(PHAssetImageDataProvider(assetIdentifier: item.assetIdentifier)))
+                .placeholder {
+                    Color(.systemGray5)
+                        .frame(height: 120)
+                        .overlay(
+                            Image(systemName: item.iconName)
+                                .font(.largeTitle)
+                                .foregroundColor(.white)
+                        )
+                }
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(height: 120)
+                .clipped()
+
             if item.type == .video {
                 VStack {
                     Spacer()
@@ -301,10 +300,10 @@ struct PhotoItemCell: View {
                 }
                 .padding(4)
             }
-            
+
             if isSelected {
                 Color.blue.opacity(0.3)
-                
+
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.white)
                     .font(.title2)
@@ -316,11 +315,6 @@ struct PhotoItemCell: View {
         .onTapGesture {
             viewModel.selectPhotoItem(item)
         }
-        .task {
-            viewModel.loadThumbnail(for: item) { image in
-                thumbnail = image
-            }
-        }
     }
 }
 
@@ -329,7 +323,7 @@ struct PhotoItemCell: View {
 struct PermissionSheet: View {
     @ObservedObject var viewModel: SharePanelViewModel
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -339,7 +333,7 @@ struct PermissionSheet: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("分享链接")
                                     .font(.headline)
-                                
+
                                 if let shareLink = shareItem.shareLink {
                                     Text(shareLink.absoluteString)
                                         .font(.caption)
@@ -347,9 +341,9 @@ struct PermissionSheet: View {
                                         .lineLimit(2)
                                 }
                             }
-                            
+
                             Spacer()
-                            
+
                             Button(action: {
                                 viewModel.copyShareLink()
                             }) {
@@ -357,17 +351,17 @@ struct PermissionSheet: View {
                             }
                         }
                     }
-                    
+
                     Section("分享信息") {
                         LabeledContent("文件路径", value: shareItem.filePath)
                         LabeledContent("权限", value: shareItem.permission.localizedDescription)
-                        
+
                         if let expiresAt = shareItem.expiresAt {
                             LabeledContent("过期时间", value: expiresAt.formatted())
                         } else {
                             LabeledContent("过期时间", value: "永不过期")
                         }
-                        
+
                         LabeledContent("创建时间", value: shareItem.createdAt.formatted())
                     }
                 }
@@ -407,29 +401,28 @@ class SharePanelViewModel: ObservableObject {
     @Published var showPermissionSheet = false
     @Published var showSuccessAlert = false
     @Published var createdShareItem: ShareItem?
-    
+
     private let fileExplorer = FileExplorer()
     private let photoLibraryManager = PhotoLibraryManager()
-    private var thumbnailCache: [String: UIImage] = [:]
-    
+
     var selectedItem: Any? {
         selectedFileItem ?? selectedPhotoItem
     }
-    
+
     var currentDirectoryParent: URL? {
         currentDirectory.flatMap { fileExplorer.parentDirectory(of: $0) }
     }
-    
+
     init() {
         loadRootDirectory()
         requestPhotoAuthorizationIfNeeded()
     }
-    
+
     func loadRootDirectory() {
         currentDirectory = nil
         currentFiles = fileExplorer.rootDirectories()
     }
-    
+
     func navigateToParent() {
         if let parent = currentDirectoryParent {
             navigate(to: parent)
@@ -437,12 +430,12 @@ class SharePanelViewModel: ObservableObject {
             loadRootDirectory()
         }
     }
-    
+
     func navigate(to directory: URL) {
         currentDirectory = directory
         currentFiles = fileExplorer.contents(of: directory)
     }
-    
+
     func selectFileItem(_ item: FileItem) {
         if item.type == .folder {
             navigate(to: item.url)
@@ -455,7 +448,7 @@ class SharePanelViewModel: ObservableObject {
             }
         }
     }
-    
+
     func selectPhotoItem(_ item: PhotoLibraryItem) {
         if selectedPhotoItem?.id == item.id {
             selectedPhotoItem = nil
@@ -464,50 +457,40 @@ class SharePanelViewModel: ObservableObject {
             selectedFileItem = nil
         }
     }
-    
-    func loadThumbnail(for item: PhotoLibraryItem, completion: @escaping (UIImage?) -> Void) {
-        if let cached = thumbnailCache[item.id] {
-            completion(cached)
-            return
-        }
-        
-        photoLibraryManager.requestThumbnail(assetIdentifier: item.assetIdentifier) { [weak self] image in
-            if let image = image {
-                self?.thumbnailCache[item.id] = image
-            }
-            completion(image)
-        }
-    }
-    
+
     func createShare() {
         var filePath: String
         var shareType: ShareType
-        
+
         if let fileItem = selectedFileItem {
             filePath = fileItem.url.path
             shareType = fileItem.type == .folder ? .folder : .file
         } else if let photoItem = selectedPhotoItem {
             // 导出相册资源到临时文件
             let fileExtension = photoItem.type == .video ? "mov" : "jpg"
-            let tempURL = FileUtils.shared.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathExtension(fileExtension)
-            photoLibraryManager.exportAsset(assetIdentifier: photoItem.assetIdentifier, to: tempURL) { [weak self] success, _ in
+            let tempURL = FileUtils.shared.temporaryDirectory.appendingPathComponent(
+                UUID().uuidString
+            ).appendingPathExtension(fileExtension)
+            photoLibraryManager.exportAsset(assetIdentifier: photoItem.assetIdentifier, to: tempURL)
+            { [weak self] success, _ in
                 guard let self = self, success else { return }
-                
+
                 Task { @MainActor in
-                    self.createShare(with: tempURL.path, type: photoItem.type == .video ? .album : .album)
+                    self.createShare(
+                        with: tempURL.path, type: photoItem.type == .video ? .album : .album)
                 }
             }
             return
         } else {
             return
         }
-        
+
         createShare(with: filePath, type: shareType)
     }
-    
+
     private func createShare(with filePath: String, type: ShareType) {
         let shareItem: ShareItem
-        
+
         if selectedExpirationDays > 0 {
             shareItem = ShareManager.shared.createShareWithExpiration(
                 filePath: filePath,
@@ -523,25 +506,26 @@ class SharePanelViewModel: ObservableObject {
                 expiresAt: nil
             )
         }
-        
+
         createdShareItem = shareItem
         showSuccessAlert = true
-        
+
         // 延迟显示详情页面
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.showPermissionSheet = true
         }
     }
-    
+
     func copyShareLink() {
         guard let shareItem = createdShareItem,
-              let shareLink = shareItem.shareLink else {
+            let shareLink = shareItem.shareLink
+        else {
             return
         }
-        
+
         UIPasteboard.general.string = shareLink.absoluteString
     }
-    
+
     private func requestPhotoAuthorizationIfNeeded() {
         if !photoLibraryManager.isAuthorized {
             photoLibraryManager.requestAuthorization { [weak self] authorized in
@@ -555,7 +539,7 @@ class SharePanelViewModel: ObservableObject {
             loadPhotos()
         }
     }
-    
+
     private func loadPhotos() {
         photos = photoLibraryManager.fetchAllAssets()
     }
@@ -572,4 +556,3 @@ extension ShareItem {
 #Preview {
     SharePanel(selectedFile: nil, selectedPhoto: nil)
 }
-
