@@ -24,6 +24,17 @@ public final class DownloadManager: NSObject {
     /// 重试延迟（秒）
     public var retryDelay: TimeInterval = 2.0
 
+    // MARK: - M3U8 Properties
+
+    /// M3U8 下载器
+    private let m3u8Downloader = M3U8Downloader()
+
+    /// M3U8 下载任务列表
+    public private(set) var m3u8Tasks: [M3U8DownloadTask] = []
+
+    /// M3U8 解析器
+    private let m3u8Parser = M3U8Parser()
+
     private var urlSession: URLSession!
     private var activeTasks: [UUID: DownloadTask] = [:]
     private let queue = DispatchQueue(
@@ -447,5 +458,106 @@ extension DownloadManager: URLSessionDownloadDelegate {
         }
 
         return result
+    }
+}
+
+// MARK: - M3U8 Download Extensions
+
+extension DownloadManager {
+
+    /// 添加 M3U8 下载任务
+    /// - Parameters:
+    ///   - url: M3U8 URL
+    ///   - savePath: 保存路径（可选，默认下载目录）
+    ///   - fileName: 文件名（可选，默认从 URL 生成）
+    /// - Returns: 任务 ID
+    @discardableResult
+    public func addM3U8Task(url: URL, savePath: URL? = nil, fileName: String? = nil) -> UUID {
+        let destinationPath = savePath ?? FileUtils.shared.downloadsDirectory
+
+        let task = M3U8DownloadTask(
+            url: url,
+            savePath: destinationPath,
+            fileName: fileName
+        )
+
+        queue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+
+            self.m3u8Tasks.append(task)
+
+            // 开始下载
+            Task {
+                await self.m3u8Downloader.start(task: task)
+            }
+        }
+
+        return task.taskId
+    }
+
+    /// 检查 URL 是否为 M3U8
+    /// - Parameter url: 要检查的 URL
+    /// - Returns: 是否为 M3U8
+    public func isM3U8URL(_ url: URL) async -> Bool {
+        let pathExtension = url.pathExtension.lowercased()
+        if pathExtension == "m3u8" || pathExtension == "m3u" {
+            return true
+        }
+        return await m3u8Parser.isValidM3U8(url: url)
+    }
+
+    /// 获取 M3U8 任务
+    /// - Parameter taskId: 任务 ID
+    /// - Returns: M3U8 下载任务
+    public func getM3U8Task(taskId: UUID) -> M3U8DownloadTask? {
+        var result: M3U8DownloadTask?
+
+        queue.sync {
+            result = m3u8Tasks.first { $0.taskId == taskId }
+        }
+
+        return result
+    }
+
+    /// 暂停 M3U8 任务
+    /// - Parameter taskId: 任务 ID
+    public func pauseM3U8Task(taskId: UUID) {
+        queue.sync {
+            if let task = m3u8Tasks.first(where: { $0.taskId == taskId }) {
+                m3u8Downloader.pause(task: task)
+            }
+        }
+    }
+
+    /// 恢复 M3U8 任务
+    /// - Parameter taskId: 任务 ID
+    public func resumeM3U8Task(taskId: UUID) {
+        queue.sync {
+            if let task = m3u8Tasks.first(where: { $0.taskId == taskId }) {
+                Task {
+                    await m3u8Downloader.resume(task: task)
+                }
+            }
+        }
+    }
+
+    /// 取消 M3U8 任务
+    /// - Parameter taskId: 任务 ID
+    public func cancelM3U8Task(taskId: UUID) {
+        queue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+
+            if let index = self.m3u8Tasks.firstIndex(where: { $0.taskId == taskId }) {
+                let task = self.m3u8Tasks[index]
+                self.m3u8Downloader.cancel(task: task)
+                self.m3u8Tasks.remove(at: index)
+            }
+        }
+    }
+
+    /// 移除 M3U8 任务
+    /// - Parameter taskId: 任务 ID
+    public func removeM3U8Task(taskId: UUID) {
+        cancelM3U8Task(taskId: taskId)
     }
 }
