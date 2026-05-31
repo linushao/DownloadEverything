@@ -109,6 +109,7 @@ struct DownloadListView: View {
                 Label("添加任务", systemImage: "plus")
             }
             .buttonStyle(.bordered)
+            .accessibilityIdentifier("AddDownloadButton")
 
             Spacer()
 
@@ -202,6 +203,7 @@ struct DownloadListView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
         }
+        .accessibilityIdentifier("DownloadList")
     }
 
     private var emptyStateView: some View {
@@ -215,6 +217,7 @@ struct DownloadListView: View {
             Text("暂无下载任务")
                 .font(.title2)
                 .foregroundColor(.secondary)
+                .accessibilityIdentifier("EmptyStateLabel")
 
             Text("点击「添加任务」开始下载")
                 .font(.system(size: 14))
@@ -239,6 +242,7 @@ struct DownloadListView: View {
             TextField("输入下载链接", text: $newTaskURL)
                 .textFieldStyle(.roundedBorder)
                 .frame(minWidth: 200, idealWidth: 400, maxWidth: .infinity)
+                .accessibilityIdentifier("URLTextField")
 
             if let error = viewModel.errorMessage {
                 Text(error)
@@ -262,6 +266,7 @@ struct DownloadListView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(newTaskURL.isEmpty)
+                .accessibilityIdentifier("ConfirmAddButton")
             }
             .padding(.bottom, 20)
         }

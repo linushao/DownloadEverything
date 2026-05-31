@@ -179,14 +179,18 @@ public final class ShareManager {
     /// 清理已过期的分享
     public func cleanExpiredShares() {
         queue.async(flags: .barrier) { [weak self] in
-            let entities = self?.repository.fetchAllShares() ?? []
+            guard let self = self else { return }
+
+            let entities = self.repository.fetchAllShares()
             for entity in entities {
-                if let shareItem = ShareItem(entity: entity),
-                    shareItem.isExpired
-                {
-                    self?.repository.deleteShare(shareId: entity.shareId)
+                // 直接检查实体是否过期，避免 ShareItem 初始化问题
+                if let expiresAt = entity.expiresAt, Date() > expiresAt {
+                    self.repository.deleteShare(shareId: entity.shareId)
                 }
             }
+
+            // 强制刷新上下文，确保数据更新
+            self.repository.refresh()
         }
     }
 }

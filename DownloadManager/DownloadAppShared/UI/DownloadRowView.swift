@@ -194,6 +194,7 @@ struct DownloadRowView: View {
                 }
                 .buttonStyle(.plain)
                 .platformHelp("分享")
+                .accessibilityIdentifier("ShareButton")
             }
             
             // 暂停/恢复按钮

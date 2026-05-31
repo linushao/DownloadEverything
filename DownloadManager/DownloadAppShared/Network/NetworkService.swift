@@ -1,3 +1,4 @@
+import Alamofire
 import Foundation
 
 /// 网络服务错误类型
@@ -22,9 +23,83 @@ public enum NetworkError: Error, LocalizedError {
             return "网络错误: \(error.localizedDescription)"
         }
     }
+
+    public var failureReason: String? {
+        switch self {
+        case .invalidURL:
+            return "无效的URL"
+        case .noData:
+            return "服务器未返回数据"
+        case .decodingFailed:
+            return "数据解析失败"
+        case .serverError(let statusCode):
+            return "服务器错误: \(statusCode)"
+        case .networkError(let error):
+            return error.localizedDescription
+        }
+    }
+
+    public var recoverySuggestion: String? {
+        switch self {
+        case .invalidURL:
+            return "请检查URL是否正确"
+        case .noData:
+            return "请稍后重试"
+        case .decodingFailed:
+            return "请检查数据格式"
+        case .serverError:
+            return "请稍后重试"
+        case .networkError:
+            return "请检查网络连接"
+        }
+    }
+
+    public var urlErrorCode: Int {
+        switch self {
+        case .invalidURL:
+            return NSURLErrorBadURL
+        case .noData:
+            return NSURLErrorCannotDecodeContentData
+        case .decodingFailed:
+            return NSURLErrorCannotDecodeContentData
+        case .serverError(let statusCode):
+            return statusCode == 404 ? NSURLErrorFileDoesNotExist : NSURLErrorBadServerResponse
+        case .networkError:
+            return NSURLErrorNetworkConnectionLost
+        }
+    }
+
+    public var asNSError: NSError {
+        return NSError(
+            domain: NSURLErrorDomain, code: urlErrorCode,
+            userInfo: [
+                NSLocalizedDescriptionKey: errorDescription ?? "",
+                NSLocalizedFailureReasonErrorKey: failureReason ?? "",
+                NSLocalizedRecoverySuggestionErrorKey: recoverySuggestion ?? "",
+            ])
+    }
 }
 
-/// 网络服务类，基于URLSession封装网络请求
+extension AFError {
+    func toNetworkError() -> NetworkError {
+        switch self {
+        case .invalidURL:
+            return .invalidURL
+        case .responseSerializationFailed:
+            return .decodingFailed
+        case .serverTrustEvaluationFailed,
+            .urlRequestValidationFailed:
+            return .networkError(underlying: self)
+        default:
+            if let underlyingError = self.underlyingError {
+                return .networkError(underlying: underlyingError)
+            }
+            return .networkError(underlying: self)
+        }
+    }
+}
+
+/// 网络服务类，基于Alamofire封装网络请求
 public final class NetworkService {
 
     // MARK: - Singleton
@@ -33,46 +108,53 @@ public final class NetworkService {
 
     // MARK: - Properties
 
-    private let session: URLSession
-    private let sessionConfiguration: URLSessionConfiguration
+    private let session: Session
+
+    private var requestTimeout: TimeInterval = 30
+    private var resourceTimeout: TimeInterval = 300
+    private var maxConnectionsPerHost: Int = 4
+
+    // MARK: - Testing
+
+    private var isMockMode: Bool = false
 
     // MARK: - Initialization
 
     private init() {
-        sessionConfiguration = URLSessionConfiguration.default
-        sessionConfiguration.timeoutIntervalForRequest = 30
-        sessionConfiguration.timeoutIntervalForResource = 300
-        sessionConfiguration.httpMaximumConnectionsPerHost = 4
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = requestTimeout
+        configuration.timeoutIntervalForResource = resourceTimeout
+        configuration.httpMaximumConnectionsPerHost = maxConnectionsPerHost
 
-        session = URLSession(configuration: sessionConfiguration)
+        session = Session(configuration: configuration)
     }
 
     // MARK: - GET Request
 
     /// 发起GET请求
     public func get(url: URL, headers: [String: String]? = nil) async throws -> Data {
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        let method = HTTPMethod.get
+        let httpHeaders = HTTPHeaders(headers ?? [:])
 
-        headers?.forEach { key, value in
-            request.setValue(value, forHTTPHeaderField: key)
+        return try await withCheckedThrowingContinuation { continuation in
+            session.request(url, method: method, headers: httpHeaders)
+                .validate(statusCode: 200..<300)
+                .responseData { response in
+                    switch response.result {
+                    case .success(let data):
+                        continuation.resume(returning: data)
+                    case .failure(let error):
+                        let networkError = self.mapError(error, response: response.response)
+                        continuation.resume(throwing: networkError)
+                    }
+                }
         }
-
-        let (data, response) = try await session.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NetworkError.networkError(underlying: NSError(domain: "NetworkService", code: -1))
-        }
-
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw NetworkError.serverError(statusCode: httpResponse.statusCode)
-        }
-
-        return data
     }
 
     /// 发起GET请求并解码为指定类型
-    public func get<T: Decodable>(url: URL, headers: [String: String]? = nil) async throws -> T {
+    public func get<T: Decodable>(_ type: T.Type, url: URL, headers: [String: String]? = nil)
+        async throws -> T
+    {
         let data = try await get(url: url, headers: headers)
 
         do {
@@ -87,33 +169,37 @@ public final class NetworkService {
 
     /// 发起POST请求
     public func post(url: URL, body: Data?, headers: [String: String]? = nil) async throws -> Data {
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = body
-
-        headers?.forEach { key, value in
-            request.setValue(value, forHTTPHeaderField: key)
-        }
+        let method = HTTPMethod.post
+        var httpHeaders = HTTPHeaders(headers ?? [:])
 
         if body != nil {
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            httpHeaders.add(name: "Content-Type", value: "application/json")
         }
 
-        let (data, response) = try await session.data(for: request)
+        var request = URLRequest(url: url)
+        request.httpMethod = method.rawValue
+        request.httpBody = body
+        request.headers = httpHeaders
 
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NetworkError.networkError(underlying: NSError(domain: "NetworkService", code: -1))
+        return try await withCheckedThrowingContinuation { continuation in
+            session.request(request)
+                .validate(statusCode: 200..<300)
+                .responseData { response in
+                    switch response.result {
+                    case .success(let data):
+                        continuation.resume(returning: data)
+                    case .failure(let error):
+                        let networkError = self.mapError(error, response: response.response)
+                        continuation.resume(throwing: networkError)
+                    }
+                }
         }
-
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw NetworkError.serverError(statusCode: httpResponse.statusCode)
-        }
-
-        return data
     }
 
     /// 发起POST请求并解码为指定类型
-    public func post<T: Decodable, B: Encodable>(url: URL, body: B, headers: [String: String]? = nil) async throws -> T {
+    public func post<T: Decodable, B: Encodable>(
+        url: URL, body: B, headers: [String: String]? = nil
+    ) async throws -> T {
         let bodyData = try JSONEncoder().encode(body)
 
         let data = try await post(url: url, body: bodyData, headers: headers)
@@ -126,47 +212,33 @@ public final class NetworkService {
         }
     }
 
-    // MARK: - Download with Resume Support
-
-    /// 创建可恢复的下载任务
-    public func createResumableDownloadTask(url: URL) -> URLSessionDownloadTask {
-        return session.downloadTask(with: url)
-    }
-
-    /// 使用resumeData创建下载任务
-    public func createResumableDownloadTask(resumeData: Data) -> URLSessionDownloadTask {
-        return session.downloadTask(withResumeData: resumeData)
-    }
-
     // MARK: - HEAD Request
 
     /// 发起HEAD请求，获取资源信息但不下载
     public func head(url: URL, headers: [String: String]? = nil) async throws -> [String: String] {
-        var request = URLRequest(url: url)
-        request.httpMethod = "HEAD"
+        let method = HTTPMethod.head
+        let httpHeaders = HTTPHeaders(headers ?? [:])
 
-        headers?.forEach { key, value in
-            request.setValue(value, forHTTPHeaderField: key)
+        return try await withCheckedThrowingContinuation { continuation in
+            session.request(url, method: method, headers: httpHeaders)
+                .validate(statusCode: 200..<300)
+                .response { response in
+                    if let error = response.error {
+                        let networkError = self.mapError(error, response: response.response)
+                        continuation.resume(throwing: networkError)
+                        return
+                    }
+
+                    var headerFields: [String: String] = [:]
+                    response.response?.allHeaderFields.forEach { key, value in
+                        if let keyString = key as? String, let valueString = value as? String {
+                            headerFields[keyString] = valueString
+                        }
+                    }
+
+                    continuation.resume(returning: headerFields)
+                }
         }
-
-        let (_, response) = try await session.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NetworkError.networkError(underlying: NSError(domain: "NetworkService", code: -1))
-        }
-
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw NetworkError.serverError(statusCode: httpResponse.statusCode)
-        }
-
-        var headerFields: [String: String] = [:]
-        httpResponse.allHeaderFields.forEach { key, value in
-            if let keyString = key as? String, let valueString = value as? String {
-                headerFields[keyString] = valueString
-            }
-        }
-
-        return headerFields
     }
 
     /// 获取文件大小
@@ -184,12 +256,60 @@ public final class NetworkService {
 
     /// 设置超时时间
     public func setTimeout(request: TimeInterval = 30, resource: TimeInterval = 300) {
-        sessionConfiguration.timeoutIntervalForRequest = request
-        sessionConfiguration.timeoutIntervalForResource = resource
+        requestTimeout = request
+        resourceTimeout = resource
+
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = requestTimeout
+        configuration.timeoutIntervalForResource = resourceTimeout
+        configuration.httpMaximumConnectionsPerHost = maxConnectionsPerHost
+
+        if !isMockMode {
+            session.sessionConfiguration.httpMaximumConnectionsPerHost = maxConnectionsPerHost
+        }
     }
 
     /// 设置最大连接数
     public func setMaxConnectionsPerHost(_ count: Int) {
-        sessionConfiguration.httpMaximumConnectionsPerHost = count
+        maxConnectionsPerHost = count
+        session.sessionConfiguration.httpMaximumConnectionsPerHost = count
+    }
+
+    // MARK: - Private Methods
+
+    private func mapError(_ error: AFError, response: HTTPURLResponse?) -> NetworkError {
+        if let statusCode = response?.statusCode, !(200..<300).contains(statusCode) {
+            return .serverError(statusCode: statusCode)
+        }
+
+        if let urlError = error.underlyingError as? URLError {
+            switch urlError.code {
+            case .badURL:
+                return .invalidURL
+            case .notConnectedToInternet, .networkConnectionLost:
+                return .networkError(underlying: urlError)
+            default:
+                return .networkError(underlying: urlError)
+            }
+        }
+
+        return error.toNetworkError()
+    }
+
+    // MARK: - Mock Support for Testing
+
+    /// 设置 mock session（仅用于测试）
+    public func setMockSession(_ session: Session) {
+        isMockMode = true
+    }
+
+    /// 清除 mock session（仅用于测试）
+    public func clearMockSession() {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = requestTimeout
+        configuration.timeoutIntervalForResource = resourceTimeout
+        configuration.httpMaximumConnectionsPerHost = maxConnectionsPerHost
+
+        isMockMode = false
     }
 }

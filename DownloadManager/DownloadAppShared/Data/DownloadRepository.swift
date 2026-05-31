@@ -89,6 +89,12 @@ class DownloadRepository {
     }
     
     private func save() {
-        CoreDataManager.shared.saveContext(context)
+        guard context.hasChanges else { return }
+        
+        do {
+            try context.save()
+        } catch {
+            print("Failed to save context: \(error)")
+        }
     }
 }

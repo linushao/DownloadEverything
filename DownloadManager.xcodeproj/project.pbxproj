@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin XCSwiftPackageProductDependency section */
+		0B3A42B92FCC999900195368 /* XCSwiftPackageProductDependency "Alamofire" */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Alamofire;
+			package = 0B3A42B62FCC205400195368 /* XCRemoteSwiftPackageReference "Alamofire" */;
+		};
+/* End XCSwiftPackageProductDependency section */
+
 /* Begin PBXContainerItemProxy section */
 		0B88EC5A2FC7116C00F9C352 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -112,6 +120,7 @@
 			);
 			name = DownloadManager;
 			packageProductDependencies = (
+				0B3A42B92FCC999900195368 /* XCSwiftPackageProductDependency "Alamofire" */,
 			);
 			productName = DownloadManager;
 			productReference = 0B88EC492FC7116A00F9C352 /* DownloadManager.app */;
@@ -135,6 +144,7 @@
 			);
 			name = DownloadManagerTests;
 			packageProductDependencies = (
+				0B3A42B92FCC999900195368 /* XCSwiftPackageProductDependency "Alamofire" */,
 			);
 			productName = DownloadManagerTests;
 			productReference = 0B88EC592FC7116C00F9C352 /* DownloadManagerTests.xctest */;
@@ -196,7 +206,9 @@
 			mainGroup = 0B88EC402FC7116A00F9C352;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				0B87E9682FC7822E00F0E7BC /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				0B3A42B62FCC205400195368 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				0B3A42B72FCC206E00195368 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				0B3A42B82FCC20A100195368 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0B88EC4A2FC7116A00F9C352 /* Products */;
@@ -329,7 +341,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
+				SDKROOT = iphonesimulator;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -385,7 +397,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				SDKROOT = iphoneos;
+				SDKROOT = iphonesimulator;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -567,7 +579,23 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		0B87E9682FC7822E00F0E7BC /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+		0B3A42B62FCC205400195368 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.12.0;
+			};
+		};
+		0B3A42B72FCC206E00195368 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.9.0;
+			};
+		};
+		0B3A42B82FCC20A100195368 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
 			requirement = {
