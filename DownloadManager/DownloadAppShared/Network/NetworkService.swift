@@ -99,8 +99,13 @@ extension AFError {
     }
 }
 
+/// 网络服务协议
+public protocol NetworkServiceProtocol: Sendable {
+    func get(url: URL, headers: [String: String]?) async throws -> Data
+}
+
 /// 网络服务类，基于Alamofire封装网络请求
-public final class NetworkService {
+public final class NetworkService: NetworkServiceProtocol {
 
     // MARK: - Singleton
 
@@ -117,6 +122,7 @@ public final class NetworkService {
     // MARK: - Testing
 
     private var isMockMode: Bool = false
+    private var mockSession: Session?
 
     // MARK: - Initialization
 
@@ -137,7 +143,7 @@ public final class NetworkService {
         let httpHeaders = HTTPHeaders(headers ?? [:])
 
         return try await withCheckedThrowingContinuation { continuation in
-            session.request(url, method: method, headers: httpHeaders)
+            activeSession.request(url, method: method, headers: httpHeaders)
                 .validate(statusCode: 200..<300)
                 .responseData { response in
                     switch response.result {
@@ -182,7 +188,7 @@ public final class NetworkService {
         request.headers = httpHeaders
 
         return try await withCheckedThrowingContinuation { continuation in
-            session.request(request)
+            activeSession.request(request)
                 .validate(statusCode: 200..<300)
                 .responseData { response in
                     switch response.result {
@@ -220,7 +226,7 @@ public final class NetworkService {
         let httpHeaders = HTTPHeaders(headers ?? [:])
 
         return try await withCheckedThrowingContinuation { continuation in
-            session.request(url, method: method, headers: httpHeaders)
+            activeSession.request(url, method: method, headers: httpHeaders)
                 .validate(statusCode: 200..<300)
                 .response { response in
                     if let error = response.error {
@@ -298,18 +304,19 @@ public final class NetworkService {
 
     // MARK: - Mock Support for Testing
 
+    private var activeSession: Session {
+        return mockSession ?? session
+    }
+
     /// 设置 mock session（仅用于测试）
     public func setMockSession(_ session: Session) {
+        mockSession = session
         isMockMode = true
     }
 
     /// 清除 mock session（仅用于测试）
     public func clearMockSession() {
-        let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = requestTimeout
-        configuration.timeoutIntervalForResource = resourceTimeout
-        configuration.httpMaximumConnectionsPerHost = maxConnectionsPerHost
-
+        mockSession = nil
         isMockMode = false
     }
 }

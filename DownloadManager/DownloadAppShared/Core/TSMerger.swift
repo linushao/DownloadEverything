@@ -9,7 +9,7 @@ import ffmpegkit
 
 // MARK: - TSMergerError
 
-public enum TSMergerError: LocalizedError {
+public enum TSMergerError: LocalizedError, Equatable {
     case fileNotFound
     case mergeFailed(String)
     case cancelled
@@ -25,6 +25,21 @@ public enum TSMergerError: LocalizedError {
             return "已取消"
         case .ffmpegNotAvailable:
             return "FFmpeg 不可用，请先集成 ffmpeg-kit"
+        }
+    }
+
+    public static func == (lhs: TSMergerError, rhs: TSMergerError) -> Bool {
+        switch (lhs, rhs) {
+        case (.fileNotFound, .fileNotFound):
+            return true
+        case (.mergeFailed(let lhsMessage), .mergeFailed(let rhsMessage)):
+            return lhsMessage == rhsMessage
+        case (.cancelled, .cancelled):
+            return true
+        case (.ffmpegNotAvailable, .ffmpegNotAvailable):
+            return true
+        default:
+            return false
         }
     }
 }

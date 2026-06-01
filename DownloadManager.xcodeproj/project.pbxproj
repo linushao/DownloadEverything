@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6B8FBAC37188FAA6C56291EF /* Pods_DownloadManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54758E11F77A6540E8AA5B48 /* Pods_DownloadManager.framework */; };
+		B8E5803530C59999F5F58598 /* Pods_DownloadManagerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA612FD4F20DD36F110BDA8E /* Pods_DownloadManagerTests.framework */; };
+		E131288E8BE3FA5E1221958B /* Pods_DownloadManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F09D7ADED6E6BDB17FF54398 /* Pods_DownloadManager.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,30 +32,27 @@
 		0B88EC492FC7116A00F9C352 /* DownloadManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DownloadManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B88EC592FC7116C00F9C352 /* DownloadManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DownloadManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B88EC632FC7116C00F9C352 /* DownloadManagerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DownloadManagerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		54758E11F77A6540E8AA5B48 /* Pods_DownloadManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		54CD632516F4C980769658E9 /* Pods-DownloadManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.release.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.release.xcconfig"; sourceTree = "<group>"; };
-		7B049D497E3F04D8400D8285 /* Pods-DownloadManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.debug.xcconfig"; sourceTree = "<group>"; };
+		1FCE9BB7074DA99054D4FA91 /* Pods-DownloadManagerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManagerTests.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests.debug.xcconfig"; sourceTree = "<group>"; };
+		42F2C911DEE9C97B40D70599 /* Pods-DownloadManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.release.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.release.xcconfig"; sourceTree = "<group>"; };
+		6AA7559CBFBC518ACFDA1522 /* Pods-DownloadManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.debug.xcconfig"; sourceTree = "<group>"; };
+		AA612FD4F20DD36F110BDA8E /* Pods_DownloadManagerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManagerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D21554D31462F42080796DAE /* Pods-DownloadManagerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManagerTests.release.xcconfig"; path = "Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests.release.xcconfig"; sourceTree = "<group>"; };
+		F09D7ADED6E6BDB17FF54398 /* Pods_DownloadManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0B88EC4B2FC7116A00F9C352 /* DownloadManager */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = DownloadManager;
 			sourceTree = "<group>";
 		};
 		0B88EC5C2FC7116C00F9C352 /* DownloadManagerTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = DownloadManagerTests;
 			sourceTree = "<group>";
 		};
 		0B88EC662FC7116C00F9C352 /* DownloadManagerUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = DownloadManagerUITests;
 			sourceTree = "<group>";
 		};
@@ -65,7 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6B8FBAC37188FAA6C56291EF /* Pods_DownloadManager.framework in Frameworks */,
+				E131288E8BE3FA5E1221958B /* Pods_DownloadManager.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B8E5803530C59999F5F58598 /* Pods_DownloadManagerTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,7 +93,7 @@
 				0B88EC662FC7116C00F9C352 /* DownloadManagerUITests */,
 				0B88EC4A2FC7116A00F9C352 /* Products */,
 				6F761FBF2AD50749EEAA77A0 /* Pods */,
-				54033074DE262BFB9583FE6A /* Frameworks */,
+				B8C8AA63EFFFD3AAFFC50930 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,21 +107,24 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		54033074DE262BFB9583FE6A /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				54758E11F77A6540E8AA5B48 /* Pods_DownloadManager.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		6F761FBF2AD50749EEAA77A0 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				7B049D497E3F04D8400D8285 /* Pods-DownloadManager.debug.xcconfig */,
-				54CD632516F4C980769658E9 /* Pods-DownloadManager.release.xcconfig */,
+				6AA7559CBFBC518ACFDA1522 /* Pods-DownloadManager.debug.xcconfig */,
+				42F2C911DEE9C97B40D70599 /* Pods-DownloadManager.release.xcconfig */,
+				1FCE9BB7074DA99054D4FA91 /* Pods-DownloadManagerTests.debug.xcconfig */,
+				D21554D31462F42080796DAE /* Pods-DownloadManagerTests.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		B8C8AA63EFFFD3AAFFC50930 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F09D7ADED6E6BDB17FF54398 /* Pods_DownloadManager.framework */,
+				AA612FD4F20DD36F110BDA8E /* Pods_DownloadManagerTests.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -132,12 +134,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0B88EC6D2FC7116C00F9C352 /* Build configuration list for PBXNativeTarget "DownloadManager" */;
 			buildPhases = (
-				F12C62F18343AE2429CEB187 /* [CP] Check Pods Manifest.lock */,
+				C2BEF07CE79ABE9B869985CC /* [CP] Check Pods Manifest.lock */,
 				0B88EC452FC7116A00F9C352 /* Sources */,
 				0B88EC462FC7116A00F9C352 /* Frameworks */,
 				0B88EC472FC7116A00F9C352 /* Resources */,
-				5257DB506FD0DF256A12185E /* [CP] Copy Pods Resources */,
-				FAB6EC94B1CBD6F90F06BF1D /* [CP] Embed Pods Frameworks */,
+				8B30EB7EA66110FE2CCF7A28 /* [CP] Embed Pods Frameworks */,
+				587D554072D4CAAFC2E68037 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -155,9 +157,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0B88EC702FC7116C00F9C352 /* Build configuration list for PBXNativeTarget "DownloadManagerTests" */;
 			buildPhases = (
+				80FF7C5B8FBC93A7F9198226 /* [CP] Check Pods Manifest.lock */,
 				0B88EC552FC7116C00F9C352 /* Sources */,
 				0B88EC562FC7116C00F9C352 /* Frameworks */,
 				0B88EC572FC7116C00F9C352 /* Resources */,
+				0526B11FD084AC4EEBA909C7 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -262,7 +266,28 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		5257DB506FD0DF256A12185E /* [CP] Copy Pods Resources */ = {
+		0526B11FD084AC4EEBA909C7 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		587D554072D4CAAFC2E68037 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -270,16 +295,63 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F12C62F18343AE2429CEB187 /* [CP] Check Pods Manifest.lock */ = {
+		80FF7C5B8FBC93A7F9198226 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-DownloadManagerTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		8B30EB7EA66110FE2CCF7A28 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2BEF07CE79ABE9B869985CC /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -299,23 +371,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FAB6EC94B1CBD6F90F06BF1D /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -479,7 +534,7 @@
 		};
 		0B88EC6E2FC7116C00F9C352 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7B049D497E3F04D8400D8285 /* Pods-DownloadManager.debug.xcconfig */;
+			baseConfigurationReference = 6AA7559CBFBC518ACFDA1522 /* Pods-DownloadManager.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -511,7 +566,7 @@
 		};
 		0B88EC6F2FC7116C00F9C352 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 54CD632516F4C980769658E9 /* Pods-DownloadManager.release.xcconfig */;
+			baseConfigurationReference = 42F2C911DEE9C97B40D70599 /* Pods-DownloadManager.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -543,6 +598,7 @@
 		};
 		0B88EC712FC7116C00F9C352 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1FCE9BB7074DA99054D4FA91 /* Pods-DownloadManagerTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -562,6 +618,7 @@
 		};
 		0B88EC722FC7116C00F9C352 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D21554D31462F42080796DAE /* Pods-DownloadManagerTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;

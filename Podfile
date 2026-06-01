@@ -5,4 +5,9 @@ target 'DownloadManager' do
   pod 'Alamofire', '~> 5.9'
   pod 'Kingfisher', '~> 8.0'
   pod 'ffmpeg-kit-full-gpl', '~> 6.0', :modular_headers => true
+
+  target 'DownloadManagerTests' do
+    inherit! :search_paths
+    pod 'Alamofire', '~> 5.9'
+  end
 end

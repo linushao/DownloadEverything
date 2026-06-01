@@ -5,8 +5,8 @@
 //  Created by ace wei on 2026/5/28.
 //
 
-import XCTest
 import Alamofire
+import XCTest
 
 @testable import DownloadManager
 
@@ -21,8 +21,7 @@ final class NetworkServiceTests: XCTestCase {
         MockURLProtocol.requestHandler = nil
         let configuration = URLSessionConfiguration.default
         configuration.protocolClasses = [MockURLProtocol.self]
-        let urlSession = URLSession(configuration: configuration)
-        mockSession = Session(session: urlSession)
+        mockSession = Session(configuration: configuration)
 
         networkService = NetworkService.shared
         networkService.setMockSession(mockSession)

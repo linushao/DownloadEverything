@@ -8,7 +8,7 @@ import Foundation
 
 // MARK: - M3U8ParserError
 
-public enum M3U8ParserError: LocalizedError {
+public enum M3U8ParserError: LocalizedError, Equatable {
     case invalidURL
     case invalidFormat
     case networkError(Error)
@@ -29,6 +29,23 @@ public enum M3U8ParserError: LocalizedError {
             return "解析失败: \(message)"
         }
     }
+
+    public static func == (lhs: M3U8ParserError, rhs: M3U8ParserError) -> Bool {
+        switch (lhs, rhs) {
+        case (.invalidURL, .invalidURL):
+            return true
+        case (.invalidFormat, .invalidFormat):
+            return true
+        case (.networkError, .networkError):
+            return true
+        case (.emptyPlaylist, .emptyPlaylist):
+            return true
+        case (.parsingFailed(let lhsMessage), .parsingFailed(let rhsMessage)):
+            return lhsMessage == rhsMessage
+        default:
+            return false
+        }
+    }
 }
 
 // MARK: - M3U8Parser
@@ -38,11 +55,11 @@ public final class M3U8Parser {
 
     // MARK: - Properties
 
-    private let networkService: NetworkService
+    private let networkService: NetworkServiceProtocol
 
     // MARK: - Initialization
 
-    public init(networkService: NetworkService = .shared) {
+    public init(networkService: NetworkServiceProtocol = NetworkService.shared) {
         self.networkService = networkService
     }
 
@@ -52,7 +69,7 @@ public final class M3U8Parser {
     /// - Parameter url: M3U8 播放列表 URL
     /// - Returns: 解析后的 M3U8Playlist
     public func parse(url: URL) async throws -> M3U8Playlist {
-        let data = try await networkService.get(url: url)
+        let data = try await networkService.get(url: url, headers: nil)
         guard let content = String(data: data, encoding: .utf8) else {
             throw M3U8ParserError.invalidFormat
         }
