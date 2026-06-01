@@ -20,7 +20,13 @@ struct DownloadListView: View {
     @State private var previewImageURL: URL?
     @State private var previewFileName: String = ""
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     private let m3u8Parser = M3U8Parser()
+
+    private var isIPad: Bool {
+        horizontalSizeClass == .regular
+    }
 
     // MARK: - Task Filter
 
@@ -52,15 +58,115 @@ struct DownloadListView: View {
 
     var body: some View {
         #if os(iOS)
-            NavigationStack {
-                contentView
-                    .navigationTitle("下载管理")
-                    .navigationBarTitleDisplayMode(.inline)
+            if isIPad {
+                NavigationSplitView {
+                    sidebarView
+                } detail: {
+                    detailView
+                }
+                .navigationSplitViewStyle(.balanced)
+                .sheet(isPresented: $showAddTaskSheet) {
+                    addTaskSheet
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
+                }
+                .sheet(item: $shareURL) { url in
+                    ActivityView(activityItems: [url])
+                }
+                .sheet(
+                    isPresented: .init(
+                        get: { previewImageURL != nil }, set: { if !$0 { previewImageURL = nil } })
+                ) {
+                    if let url = previewImageURL {
+                        ImagePreviewView(imageURL: url, fileName: previewFileName)
+                            .presentationDetents([.medium, .large])
+                            .presentationDragIndicator(.visible)
+                    }
+                }
+                .alert("文件不存在", isPresented: $showFileNotFoundAlert) {
+                    Button("确定", role: .cancel) {}
+                } message: {
+                    Text("要分享的文件不存在，可能已被删除。")
+                }
+            } else {
+                NavigationStack {
+                    contentView
+                        .navigationTitle("下载管理")
+                        .navigationBarTitleDisplayMode(.inline)
+                }
             }
         #else
             contentView
                 .frame(minWidth: 800, minHeight: 600)
         #endif
+    }
+
+    // MARK: - iPad Specific Views
+
+    @ViewBuilder
+    private var sidebarView: some View {
+        VStack(spacing: 0) {
+            // 筛选器
+            filterBar
+                .padding(.top, 8)
+
+            Divider()
+
+            // 列表内容
+            let allTasks = filteredTasks + viewModel.m3u8Tasks.map { $0 as Any }
+            if allTasks.isEmpty {
+                emptyStateView
+            } else {
+                taskList
+            }
+
+            Divider()
+
+            // 工具栏（底部）
+            toolbar
+                .padding(.bottom, 8)
+        }
+        .navigationTitle("下载管理")
+    }
+
+    @ViewBuilder
+    private var detailView: some View {
+        if let task = selectedTask {
+            DownloadDetailView(
+                task: task,
+                onPause: { viewModel.pauseTask(task) },
+                onResume: { viewModel.resumeTask(task) },
+                onCancel: { viewModel.cancelTask(task) },
+                onRemove: {
+                    viewModel.removeTask(task)
+                    selectedTask = nil
+                },
+                onDismiss: { selectedTask = nil }
+            )
+        } else if let task = selectedM3U8Task {
+            M3U8DownloadDetailView(
+                task: task,
+                onPause: { viewModel.pauseM3U8Task(task) },
+                onResume: { viewModel.resumeM3U8Task(task) },
+                onCancel: { viewModel.cancelM3U8Task(task) },
+                onRemove: {
+                    viewModel.removeM3U8Task(task)
+                    selectedM3U8Task = nil
+                },
+                onDismiss: { selectedM3U8Task = nil }
+            )
+        } else {
+            VStack(spacing: 16) {
+                Image(systemName: "arrow.down.circle")
+                    .font(.system(size: 64))
+                    .foregroundColor(.secondary.opacity(0.5))
+
+                Text("选择任务查看详情")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 
     @ViewBuilder
@@ -86,6 +192,8 @@ struct DownloadListView: View {
         }
         .sheet(isPresented: $showAddTaskSheet) {
             addTaskSheet
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showDetailSheet) {
             if let task = selectedTask {
@@ -97,6 +205,8 @@ struct DownloadListView: View {
                     onRemove: { viewModel.removeTask(task) },
                     onDismiss: { showDetailSheet = false }
                 )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
             }
         }
         .sheet(isPresented: $showM3U8DetailSheet) {
@@ -109,6 +219,8 @@ struct DownloadListView: View {
                     onRemove: { viewModel.removeM3U8Task(task) },
                     onDismiss: { showM3U8DetailSheet = false }
                 )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
             }
         }
         .sheet(item: $shareURL) { url in
@@ -120,6 +232,8 @@ struct DownloadListView: View {
         ) {
             if let url = previewImageURL {
                 ImagePreviewView(imageURL: url, fileName: previewFileName)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
             }
         }
         .alert("文件不存在", isPresented: $showFileNotFoundAlert) {
@@ -211,7 +325,10 @@ struct DownloadListView: View {
                 // 显示普通任务
                 ForEach(filteredTasks) { task in
                     Button {
-                        if task.status == .completed && task.fileName.isImageFile {
+                        if isIPad {
+                            selectedTask = task
+                            selectedM3U8Task = nil
+                        } else if task.status == .completed && task.fileName.isImageFile {
                             if task.fileExists {
                                 previewImageURL = task.fileURL
                                 previewFileName = task.fileName
@@ -239,13 +356,17 @@ struct DownloadListView: View {
                                 }
                                 : nil,
                             onPreview: nil,
-                            onDetailTap: task.status == .completed && task.fileName.isImageFile
-                                ? {
-                                    selectedTask = task
-                                    showDetailSheet = true
-                                }
-                                : nil
+                            onDetailTap: isIPad
+                                ? nil
+                                : (task.status == .completed && task.fileName.isImageFile
+                                    ? {
+                                        selectedTask = task
+                                        showDetailSheet = true
+                                    }
+                                    : nil)
                         )
+                        .background(
+                            selectedTask?.id == task.id ? Color.blue.opacity(0.1) : Color.clear)
                     }
                     .buttonStyle(.plain)
                 }
@@ -253,8 +374,13 @@ struct DownloadListView: View {
                 // 显示m3u8任务
                 ForEach(viewModel.m3u8Tasks) { task in
                     Button {
-                        selectedM3U8Task = task
-                        showM3U8DetailSheet = true
+                        if isIPad {
+                            selectedM3U8Task = task
+                            selectedTask = nil
+                        } else {
+                            selectedM3U8Task = task
+                            showM3U8DetailSheet = true
+                        }
                     } label: {
                         M3U8DownloadRowView(
                             task: task,
@@ -273,11 +399,15 @@ struct DownloadListView: View {
                                     }
                                 }
                                 : nil,
-                            onDetailTap: {
-                                selectedM3U8Task = task
-                                showM3U8DetailSheet = true
-                            }
+                            onDetailTap: isIPad
+                                ? nil
+                                : {
+                                    selectedM3U8Task = task
+                                    showM3U8DetailSheet = true
+                                }
                         )
+                        .background(
+                            selectedM3U8Task?.id == task.id ? Color.blue.opacity(0.1) : Color.clear)
                     }
                     .buttonStyle(.plain)
                 }
