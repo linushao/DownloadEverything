@@ -43,7 +43,8 @@ final class SnapshotTests: XCTestCase {
             onPause: {},
             onResume: {},
             onCancel: {},
-            onRemove: {}
+            onRemove: {},
+            onRestart: nil
         )
         .frame(width: 320, height: 80)
         .preferredColorScheme(.light)
@@ -69,7 +70,8 @@ final class SnapshotTests: XCTestCase {
             onResume: {},
             onCancel: {},
             onRemove: {},
-            onShare: {}
+            onShare: {},
+            onRestart: nil
         )
         .frame(width: 320, height: 80)
         .preferredColorScheme(.light)
@@ -94,7 +96,8 @@ final class SnapshotTests: XCTestCase {
             onPause: {},
             onResume: {},
             onCancel: {},
-            onRemove: {}
+            onRemove: {},
+            onRestart: nil
         )
         .frame(width: 320, height: 80)
         .preferredColorScheme(.light)
@@ -119,7 +122,8 @@ final class SnapshotTests: XCTestCase {
             onPause: {},
             onResume: {},
             onCancel: {},
-            onRemove: {}
+            onRemove: {},
+            onRestart: nil
         )
         .frame(width: 320, height: 80)
         .preferredColorScheme(.light)
@@ -143,7 +147,8 @@ final class SnapshotTests: XCTestCase {
             onPause: {},
             onResume: {},
             onCancel: {},
-            onRemove: {}
+            onRemove: {},
+            onRestart: nil
         )
         .frame(width: 320, height: 80)
         .preferredColorScheme(.light)

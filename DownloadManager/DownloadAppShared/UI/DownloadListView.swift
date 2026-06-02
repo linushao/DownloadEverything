@@ -141,7 +141,8 @@ struct DownloadListView: View {
                     viewModel.removeTask(task)
                     selectedTask = nil
                 },
-                onDismiss: { selectedTask = nil }
+                onDismiss: { selectedTask = nil },
+                onRestart: { viewModel.restartTask(task) }
             )
         } else if let task = selectedM3U8Task {
             M3U8DownloadDetailView(
@@ -203,7 +204,8 @@ struct DownloadListView: View {
                     onResume: { viewModel.resumeTask(task) },
                     onCancel: { viewModel.cancelTask(task) },
                     onRemove: { viewModel.removeTask(task) },
-                    onDismiss: { showDetailSheet = false }
+                    onDismiss: { showDetailSheet = false },
+                    onRestart: { viewModel.restartTask(task) }
                 )
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
@@ -363,7 +365,8 @@ struct DownloadListView: View {
                                         selectedTask = task
                                         showDetailSheet = true
                                     }
-                                    : nil)
+                                    : nil),
+                            onRestart: { viewModel.restartTask(task) }
                         )
                         .background(
                             selectedTask?.id == task.id ? Color.blue.opacity(0.1) : Color.clear)

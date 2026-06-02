@@ -53,6 +53,9 @@ public final class M3U8Downloader {
     /// 速度限制（字节/秒），0表示不限速
     public var speedLimit: Double = 0
 
+    /// 切片数量限制，0表示不限制
+    public var segmentLimit: Int = 0
+
     /// 速度限制相关
     private var totalBytesDownloaded: Int64 = 0
     private var lastSpeedUpdateTime: Date = Date()
@@ -108,14 +111,14 @@ public final class M3U8Downloader {
             task.updateStatus(.downloadingSegments)
             try task.createTempDirectory()
 
-            // 2. 下载分片
-            try await downloadSegments(task: task, playlist: mediaPlaylist)
+            // 2. 下载分片（返回实际下载的分片列表，已应用数量限制）
+            let downloadedSegments = try await downloadSegments(task: task, playlist: mediaPlaylist)
 
-            // 3. 合并分片
+            // 3. 合并分片（使用实际下载的分片列表）
             task.updateStatus(.merging)
             let outputURL = task.savePath.appendingPathComponent(task.fileName)
             try await merger.merge(
-                segments: mediaPlaylist.segments,
+                segments: downloadedSegments,
                 task: task,
                 outputURL: outputURL,
                 progressHandler: nil
@@ -154,12 +157,13 @@ public final class M3U8Downloader {
         task.updateStatus(.downloadingSegments)
 
         do {
-            try await downloadSegments(task: task, playlist: playlist)
+            // 下载分片（返回实际下载的分片列表，已应用数量限制）
+            let downloadedSegments = try await downloadSegments(task: task, playlist: playlist)
 
             task.updateStatus(.merging)
             let outputURL = task.savePath.appendingPathComponent(task.fileName)
             try await merger.merge(
-                segments: playlist.segments,
+                segments: downloadedSegments,
                 task: task,
                 outputURL: outputURL,
                 progressHandler: nil
@@ -184,8 +188,17 @@ public final class M3U8Downloader {
 
     // MARK: - Private Methods
 
-    private func downloadSegments(task: M3U8DownloadTask, playlist: M3U8Playlist) async throws {
-        let segments = playlist.segments
+    private func downloadSegments(task: M3U8DownloadTask, playlist: M3U8Playlist) async throws
+        -> [MediaSegment]
+    {
+        var segments = playlist.segments
+        let originalTotalSegments = segments.count
+
+        // 应用切片数量限制
+        if segmentLimit > 0 && segmentLimit < segments.count {
+            segments = Array(segments.prefix(segmentLimit))
+        }
+
         let totalSegments = segments.count
 
         var downloadedCount = task.downloadedSegments
@@ -234,6 +247,8 @@ public final class M3U8Downloader {
 
             try await group.waitForAll()
         }
+
+        return segments
     }
 
     private func downloadSegment(

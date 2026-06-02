@@ -2,10 +2,11 @@ import SwiftUI
 
 struct AddDownloadView: View {
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var settingsManager: SettingsManager
 
     @State private var urlString = ""
     @State private var fileName = ""
-    @State private var savePath = FileUtils.defaultDownloadDirectory.path
+    @State private var savePath = ""
     @State private var isM3U8 = false
 
     var body: some View {
@@ -72,5 +73,8 @@ struct AddDownloadView: View {
         }
         .padding()
         .frame(width: 400)
+        .onAppear {
+            savePath = settingsManager.downloadPath
+        }
     }
 }

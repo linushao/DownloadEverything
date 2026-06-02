@@ -71,7 +71,7 @@ public final class DownloadTask: NSObject, Identifiable {
         self.updatedAt = Date()
         super.init()
     }
-    
+
     /// 从 CoreData 的 DownloadEntity 初始化
     public init(entity: DownloadEntity) {
         self.taskId = entity.taskId
@@ -213,7 +213,8 @@ public final class DownloadTask: NSObject, Identifiable {
         lastBytesWritten = downloadedBytes
         lastSpeedUpdateTime = Date()
 
-        speedCalculationTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        speedCalculationTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) {
+            [weak self] _ in
             self?.calculateSpeed()
         }
     }
@@ -264,6 +265,16 @@ public final class DownloadTask: NSObject, Identifiable {
         resumeData = nil
     }
 
+    /// 删除本地缓存文件
+    func deleteLocalCache() {
+        let fileURL = self.fileURL
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            try? FileManager.default.removeItem(at: fileURL)
+        }
+        downloadedBytes = 0
+        totalBytes = 0
+    }
+
     /// 标记任务失败
     func markFailed(error: Error?) {
         status = .failed
@@ -274,7 +285,8 @@ public final class DownloadTask: NSObject, Identifiable {
     }
 
     private func startSpeedLimitTimer() {
-        speedLimitTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+        speedLimitTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) {
+            [weak self] _ in
             guard let self = self else { return }
             self.checkSpeedLimit(maxSpeed: DownloadManager.shared.speedLimit)
         }
@@ -289,5 +301,3 @@ public final class DownloadTask: NSObject, Identifiable {
         }
     }
 }
-
-

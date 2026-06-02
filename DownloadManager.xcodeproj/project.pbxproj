@@ -8,10 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		8AF77ABEC55F9CE864B9B3A5 /* Pods_DownloadManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 986AEB27536E4563EB1A7D82 /* Pods_DownloadManager.framework */; };
-		A1B2C3D4E5F6A7B8C9D0E1F15 /* DownloadManagerMac/App.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F10 /* DownloadManagerMac/App.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F16 /* DownloadManagerMac/MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F11 /* DownloadManagerMac/MainView.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F17 /* DownloadManagerMac/AddDownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F12 /* DownloadManagerMac/AddDownloadView.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F19 /* DownloadManagerMac/FileExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F14 /* DownloadManagerMac/FileExplorerView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F15 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F10 /* App.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F16 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F11 /* MainView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F17 /* AddDownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F12 /* AddDownloadView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F19 /* FileExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F14 /* FileExplorerView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F22 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F20 /* SettingsManager.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F23 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F21 /* SettingsView.swift */; };
 		AD930189F80C4B283A628E28 /* Pods_DownloadManagerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8FEE68628B932D1AE8AEDB10 /* Pods_DownloadManagerTests.framework */; };
 		E9727A6E9B3D9010737D25BA /* Pods_DownloadManagerMac.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A925832CEC7FD31A5A817D1 /* Pods_DownloadManagerMac.framework */; };
 /* End PBXBuildFile section */
@@ -42,10 +44,12 @@
 		4E8921648ED0209953A7C987 /* Pods-DownloadManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.debug.xcconfig"; sourceTree = "<group>"; };
 		8FEE68628B932D1AE8AEDB10 /* Pods_DownloadManagerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManagerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		986AEB27536E4563EB1A7D82 /* Pods_DownloadManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1B2C3D4E5F6A7B8C9D0E1F10 /* DownloadManagerMac/App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/App.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F11 /* DownloadManagerMac/MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/MainView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F12 /* DownloadManagerMac/AddDownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/AddDownloadView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F14 /* DownloadManagerMac/FileExplorerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/FileExplorerView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F10 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/App.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F11 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/MainView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F12 /* AddDownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/AddDownloadView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F14 /* FileExplorerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/FileExplorerView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F20 /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/SettingsManager.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F21 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/SettingsView.swift; sourceTree = "<group>"; };
 		A647695F19602F166936AC8F /* Pods-DownloadManagerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManagerTests.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		B64B586DFBA94592E7C96ADD /* Pods-DownloadManagerMac.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManagerMac.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManagerMac/Pods-DownloadManagerMac.debug.xcconfig"; sourceTree = "<group>"; };
 		BB803A6E233B68CA041B73FD /* Pods-DownloadManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.release.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.release.xcconfig"; sourceTree = "<group>"; };
@@ -56,16 +60,22 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0B88EC4B2FC7116A00F9C352 /* DownloadManager */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = DownloadManager;
 			sourceTree = "<group>";
 		};
 		0B88EC5C2FC7116C00F9C352 /* DownloadManagerTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = DownloadManagerTests;
 			sourceTree = "<group>";
 		};
 		0B88EC662FC7116C00F9C352 /* DownloadManagerUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = DownloadManagerUITests;
 			sourceTree = "<group>";
 		};
@@ -133,10 +143,10 @@
 		0BE12A582FCF05B000EFEFB9 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				A1B2C3D4E5F6A7B8C9D0E1F10 /* DownloadManagerMac/App.swift */,
-				A1B2C3D4E5F6A7B8C9D0E1F11 /* DownloadManagerMac/MainView.swift */,
-				A1B2C3D4E5F6A7B8C9D0E1F12 /* DownloadManagerMac/AddDownloadView.swift */,
-				A1B2C3D4E5F6A7B8C9D0E1F14 /* DownloadManagerMac/FileExplorerView.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F10 /* App.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F11 /* MainView.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F12 /* AddDownloadView.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F14 /* FileExplorerView.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -362,13 +372,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -383,13 +389,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -448,13 +450,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerMac/Pods-DownloadManagerMac-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerMac/Pods-DownloadManagerMac-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -489,10 +487,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1B2C3D4E5F6A7B8C9D0E1F15 /* DownloadManagerMac/App.swift in Sources */,
-				A1B2C3D4E5F6A7B8C9D0E1F16 /* DownloadManagerMac/MainView.swift in Sources */,
-				A1B2C3D4E5F6A7B8C9D0E1F17 /* DownloadManagerMac/AddDownloadView.swift in Sources */,
-				A1B2C3D4E5F6A7B8C9D0E1F19 /* DownloadManagerMac/FileExplorerView.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F15 /* App.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F16 /* MainView.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F17 /* AddDownloadView.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F19 /* FileExplorerView.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F22 /* SettingsManager.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F23 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

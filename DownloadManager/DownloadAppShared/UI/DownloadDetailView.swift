@@ -11,6 +11,7 @@ struct DownloadDetailView: View {
     let onCancel: () -> Void
     let onRemove: () -> Void
     let onDismiss: () -> Void
+    let onRestart: (() -> Void)?
 
     @State private var showDeleteConfirmation: Bool = false
     @State private var showShareSheet: Bool = false
@@ -285,6 +286,13 @@ struct DownloadDetailView: View {
                 } else if task.status == .paused || task.status == .failed {
                     Button(action: onResume) {
                         Label("恢复", systemImage: "play.fill")
+                    }
+                    .buttonStyle(.bordered)
+                }
+
+                if task.status == .failed, let onRestart = onRestart {
+                    Button(action: onRestart) {
+                        Label("重新下载", systemImage: "arrow.clockwise")
                     }
                     .buttonStyle(.bordered)
                 }

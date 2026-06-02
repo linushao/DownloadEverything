@@ -133,3 +133,6 @@ Podfile.resolved
 *.zip
 *.tar.gz
 *.dmg
+
+## /doc/
+doc/

@@ -14,6 +14,7 @@ struct DownloadRowView: View {
     let onShare: (() -> Void)?
     let onPreview: (() -> Void)?
     let onDetailTap: (() -> Void)?
+    let onRestart: (() -> Void)?
 
     @State private var isHovering: Bool = false
 
@@ -64,7 +65,8 @@ struct DownloadRowView: View {
         onRemove: @escaping () -> Void,
         onShare: (() -> Void)? = nil,
         onPreview: (() -> Void)? = nil,
-        onDetailTap: (() -> Void)? = nil
+        onDetailTap: (() -> Void)? = nil,
+        onRestart: (() -> Void)? = nil
     ) {
         self.task = task
         self.onPause = onPause
@@ -74,6 +76,7 @@ struct DownloadRowView: View {
         self.onShare = onShare
         self.onPreview = onPreview
         self.onDetailTap = onDetailTap
+        self.onRestart = onRestart
     }
 
     /// 判断是否为图片文件
@@ -237,11 +240,22 @@ struct DownloadRowView: View {
                 .platformHelp("恢复")
             } else if task.status == .failed {
                 Button(action: onResume) {
-                    Image(systemName: "arrow.clockwise")
-                        .foregroundColor(.orange)
+                    Image(systemName: "play.fill")
+                        .foregroundColor(.green)
                 }
                 .buttonStyle(.plain)
-                .platformHelp("重试")
+                .platformHelp("恢复")
+                .accessibilityIdentifier("ResumeButton")
+
+                if let onRestart = onRestart {
+                    Button(action: onRestart) {
+                        Image(systemName: "arrow.clockwise")
+                            .foregroundColor(.orange)
+                    }
+                    .buttonStyle(.plain)
+                    .platformHelp("重新下载")
+                    .accessibilityIdentifier("RestartButton")
+                }
             }
 
             // 取消按钮（下载中或暂停时可以取消）

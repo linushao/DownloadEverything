@@ -37,6 +37,13 @@ public final class DownloadManager: NSObject, ObservableObject {
     /// M3U8 下载器
     private let m3u8Downloader = M3U8Downloader()
 
+    /// M3U8 切片数量限制，0表示不限制
+    public var m3u8SegmentLimit: Int = 0 {
+        didSet {
+            m3u8Downloader.segmentLimit = m3u8SegmentLimit
+        }
+    }
+
     /// M3U8 下载任务列表
     public private(set) var m3u8Tasks: [M3U8DownloadTask] = []
 
@@ -89,7 +96,7 @@ public final class DownloadManager: NSObject, ObservableObject {
             return addM3U8Task(url: url, savePath: savePath, fileName: fileName)
         }
 
-        let destinationPath = savePath ?? FileUtils.shared.downloadsDirectory
+        let destinationPath = savePath ?? SettingsManager.shared.downloadDirectoryURL
 
         let task = DownloadTask(
             url: url,
@@ -230,6 +237,34 @@ public final class DownloadManager: NSObject, ObservableObject {
                 syncTaskToCoreData(task)
                 result = true
             }
+        }
+
+        return result
+    }
+
+    /// 重新下载指定任务（删除缓存，从头开始下载）
+    public func restartTask(taskId: UUID) -> Bool {
+        var result = false
+
+        queue.sync {
+            guard let task = tasks.first(where: { $0.taskId == taskId }) else {
+                return
+            }
+
+            task.cancel()
+            task.deleteLocalCache()
+            task.resetForRetry()
+            syncTaskToCoreData(task)
+
+            let downloadingCount = tasks.filter { $0.status == .downloading }.count
+            if downloadingCount < maxConcurrentTasks {
+                task.start(session: urlSession)
+            } else {
+                task.status = .waiting
+                syncTaskToCoreData(task)
+            }
+
+            result = true
         }
 
         return result
@@ -493,7 +528,7 @@ extension DownloadManager {
     /// - Returns: 任务ID
     @discardableResult
     public func addM3U8Task(url: URL, savePath: URL? = nil, fileName: String? = nil) -> UUID {
-        let destinationPath = savePath ?? FileUtils.shared.downloadsDirectory
+        let destinationPath = savePath ?? SettingsManager.shared.downloadDirectoryURL
 
         let task = M3U8DownloadTask(
             url: url,

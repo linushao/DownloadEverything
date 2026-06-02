@@ -76,6 +76,12 @@ final class DownloadListViewModel: ObservableObject {
         loadTasks()
     }
 
+    /// 重新下载任务（删除缓存，从头开始下载）
+    func restartTask(_ task: DownloadTask) {
+        _ = downloadManager.restartTask(taskId: task.taskId)
+        loadTasks()
+    }
+
     /// 暂停所有任务
     func pauseAllTasks() {
         downloadManager.pauseAll()
