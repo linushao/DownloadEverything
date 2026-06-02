@@ -1,9 +1,9 @@
 ---
 name: "tdd-development"
-description: "iOS TDD(Test-Driven Development)开发流程。使用XCTest框架,严格遵循 Red-Green-Refactor 循环,覆盖单元测试、UI测试、CoreData测试、网络Mock、集成测试等场景。Invoke when user asks to add new feature, write tests, refactor code, fix bugs in TDD style, or mentions TDD/测试驱动/先写测试."
+description: "iOS + macOS TDD(Test-Driven Development)开发流程。使用XCTest框架,严格遵循 Red-Green-Refactor 循环,覆盖单元测试、UI测试、CoreData测试、网络Mock、集成测试等场景。Invoke when user asks to add new feature, write tests, refactor code, fix bugs in TDD style, or mentions TDD/测试驱动/先写测试."
 ---
 
-# TDD Development Skill (iOS + XCTest)
+# TDD Development Skill (iOS / macOS + XCTest)
 
 本 skill 用于在 DownloadApp 项目中以 **测试驱动开发 (TDD)** 方式交付代码变更。所有使用本 skill 完成的代码都必须严格遵循 **Red → Green → Refactor** 循环。
 

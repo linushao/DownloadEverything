@@ -13,7 +13,8 @@ description: "编译错误诊断与修复助手，帮助开发者定位和解决
 
 本 skill 处理以下场景：
 
-- Xcode/Swift 编译错误
+- **iOS** Xcode/Swift 编译错误
+- **macOS** Xcode/Swift 编译错误
 - Objective-C 编译错误
 - 构建系统错误（如 CocoaPods、Swift Package Manager）
 - 链接器错误（Linker errors）
@@ -28,8 +29,8 @@ description: "编译错误诊断与修复助手，帮助开发者定位和解决
 3. 了解项目的构建配置（Xcode 版本、目标平台等）
 
 **编译环境配置**：
-- 模拟器：iPhone 17
-- iOS 版本：26.5
+- iOS 模拟器：iPhone 17 (iOS 26.5)
+- macOS 平台：支持 Apple Silicon & Intel
 
 ### 第二阶段：分析错误
 

@@ -1,13 +1,13 @@
 ---
 name: coding_rules
-description: DownloadApp (iOS/Swift) 项目的编码规范、命名约定、架构分层、错误处理、测试、提交信息与代码审查清单。Invoke when 用户提到「按项目规范写」「代码风格/格式化」「命名约定/驼峰/MVVM 分层/面向协议」「magic number」「提交信息规范」「git 分支策略」「code review 清单」，或新建/修改 Swift 文件时被要求「参考项目规范」。
+description: DownloadApp (iOS/macOS/Swift) 项目的编码规范、命名约定、架构分层、错误处理、测试、提交信息与代码审查清单。Invoke when 用户提到「按项目规范写」「代码风格/格式化」「命名约定/驼峰/MVVM 分层/面向协议」「magic number」「提交信息规范」「git 分支策略」「code review 清单」，或新建/修改 Swift 文件时被要求「参考项目规范」。
 alwaysApply: false
 ---
 # DownloadApp 编码规范与开发指南
 
 ## 1. 概述
 
-本文档定义 DownloadApp 项目的编码规范、最佳实践和开发流程。
+本文档定义 DownloadApp (iOS + macOS 双平台) 项目的编码规范、最佳实践和开发流程。
 
 ### 1.1 硬性原则（执行前必读）
 
