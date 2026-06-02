@@ -1,7 +1,8 @@
+import Combine
 import Foundation
 
 /// 下载管理器，负责管理所有下载任务
-public final class DownloadManager: NSObject {
+public final class DownloadManager: NSObject, ObservableObject {
 
     // MARK: - Singleton
 
@@ -10,7 +11,10 @@ public final class DownloadManager: NSObject {
     // MARK: - Properties
 
     /// 所有下载任务列表
-    public private(set) var tasks: [DownloadTask] = []
+    @Published public private(set) var tasks: [DownloadTask] = []
+
+    /// 是否显示添加下载弹窗
+    @Published public var showAddDownloadSheet = false
 
     /// 最大并发任务数
     public var maxConcurrentTasks: Int = 4
@@ -608,5 +612,48 @@ extension DownloadManager {
     /// - Parameter taskId: 任务ID
     public func removeM3U8Task(taskId: UUID) {
         cancelM3U8Task(taskId: taskId)
+    }
+
+    // MARK: - SwiftUI Convenience Methods
+
+    /// 开始普通下载（SwiftUI便捷方法）
+    /// - Parameters:
+    ///   - url: 下载URL
+    ///   - destinationURL: 目标保存路径
+    public func startDownload(url: URL, destinationURL: URL) {
+        let savePath = destinationURL.deletingLastPathComponent()
+        let fileName = destinationURL.lastPathComponent
+        _ = addTask(url: url, savePath: savePath, fileName: fileName)
+    }
+
+    /// 开始M3U8下载（SwiftUI便捷方法）
+    /// - Parameters:
+    ///   - url: M3U8 URL
+    ///   - destinationURL: 目标保存路径
+    public func startM3U8Download(url: URL, destinationURL: URL) {
+        let savePath = destinationURL.deletingLastPathComponent()
+        let fileName = destinationURL.lastPathComponent
+        _ = addM3U8Task(url: url, savePath: savePath, fileName: fileName)
+    }
+
+    /// 暂停下载任务
+    /// - Parameter taskId: 任务ID
+    public func pauseDownload(taskId: UUID) {
+        pauseTask(taskId: taskId)
+        pauseM3U8Task(taskId: taskId)
+    }
+
+    /// 恢复下载任务
+    /// - Parameter taskId: 任务ID
+    public func resumeDownload(taskId: UUID) {
+        resumeTask(taskId: taskId)
+        resumeM3U8Task(taskId: taskId)
+    }
+
+    /// 移除下载任务
+    /// - Parameter taskId: 任务ID
+    public func removeDownload(taskId: UUID) {
+        removeTask(taskId: taskId)
+        removeM3U8Task(taskId: taskId)
     }
 }

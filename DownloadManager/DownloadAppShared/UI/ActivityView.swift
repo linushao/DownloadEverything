@@ -1,21 +1,23 @@
 import SwiftUI
-import UIKit
 
-/// 系统分享视图，用于包装 UIActivityViewController
-struct ActivityView: UIViewControllerRepresentable {
-    /// 要分享的项目
+#if os(iOS)
+    import UIKit
+#else
+    import AppKit
+#endif
+
+struct ActivityView: View {
     let activityItems: [Any]
-    /// 可选的应用活动类型
-    let applicationActivities: [UIActivity]?
-    /// 排除的活动类型
-    let excludedActivityTypes: [UIActivity.ActivityType]?
-    /// 是否突出显示AirDrop（排除一些不常用的分享选项）
+    let applicationActivities: [Any]?
+    let excludedActivityTypes: [Any]?
     let highlightAirDrop: Bool
+
+    @State private var isPresented = false
 
     init(
         activityItems: [Any],
-        applicationActivities: [UIActivity]? = nil,
-        excludedActivityTypes: [UIActivity.ActivityType]? = nil,
+        applicationActivities: [Any]? = nil,
+        excludedActivityTypes: [Any]? = nil,
         highlightAirDrop: Bool = true
     ) {
         self.activityItems = activityItems
@@ -24,67 +26,111 @@ struct ActivityView: UIViewControllerRepresentable {
         self.highlightAirDrop = highlightAirDrop
     }
 
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        // 验证分享项
-        let validActivityItems = activityItems.filter { item in
-            if let url = item as? URL {
-                // 对于文件 URL，检查文件是否存在
-                if url.isFileURL {
-                    return FileManager.default.fileExists(atPath: url.path)
+    var body: some View {
+        #if os(iOS)
+            ActivityViewControllerWrapper(
+                activityItems: activityItems,
+                applicationActivities: applicationActivities as? [UIActivity],
+                excludedActivityTypes: excludedActivityTypes as? [UIActivity.ActivityType],
+                highlightAirDrop: highlightAirDrop
+            )
+        #else
+            Button(action: {
+                showSharePanel()
+            }) {
+                Image(systemName: "square.and.arrow.up")
+                    .foregroundColor(.blue)
+            }
+        #endif
+    }
+
+    #if os(macOS)
+        private func showSharePanel() {
+            for item in activityItems {
+                if let url = item as? URL, url.isFileURL {
+                    let panel = NSSavePanel()
+                    panel.title = "导出文件"
+                    panel.nameFieldStringValue = url.lastPathComponent
+                    panel.canCreateDirectories = true
+                    panel.begin { result in
+                        if result == .OK, let destinationURL = panel.url {
+                            do {
+                                try FileManager.default.copyItem(at: url, to: destinationURL)
+                            } catch {
+                                print("文件复制失败: \(error)")
+                            }
+                        }
+                    }
+                    break
+                }
+            }
+        }
+    #endif
+}
+
+#if os(iOS)
+    struct ActivityViewControllerWrapper: UIViewControllerRepresentable {
+        let activityItems: [Any]
+        let applicationActivities: [UIActivity]?
+        let excludedActivityTypes: [UIActivity.ActivityType]?
+        let highlightAirDrop: Bool
+
+        func makeUIViewController(context: Context) -> UIActivityViewController {
+            let validActivityItems = activityItems.filter { item in
+                if let url = item as? URL {
+                    if url.isFileURL {
+                        return FileManager.default.fileExists(atPath: url.path)
+                    }
+                    return true
                 }
                 return true
             }
-            return true
-        }
 
-        let controller = UIActivityViewController(
-            activityItems: validActivityItems,
-            applicationActivities: applicationActivities
-        )
+            let controller = UIActivityViewController(
+                activityItems: validActivityItems,
+                applicationActivities: applicationActivities
+            )
 
-        if highlightAirDrop {
-            var excludedTypes: [UIActivity.ActivityType] = [
-                .addToReadingList,
-                .assignToContact,
-                .openInIBooks,
-                .postToTencentWeibo,
-                .postToWeibo,
-                .postToVimeo,
-                .postToFlickr,
-                .postToTwitter,
-                .postToFacebook,
-                .mail,
-                .print,
-                .markupAsPDF,
-            ]
+            if highlightAirDrop {
+                var excludedTypes: [UIActivity.ActivityType] = [
+                    .addToReadingList,
+                    .assignToContact,
+                    .openInIBooks,
+                    .postToTencentWeibo,
+                    .postToWeibo,
+                    .postToVimeo,
+                    .postToFlickr,
+                    .postToTwitter,
+                    .postToFacebook,
+                    .mail,
+                    .print,
+                    .markupAsPDF,
+                ]
 
-            // 如果有用户自定义的排除类型，合并进去
-            if let customExcluded = excludedActivityTypes {
-                excludedTypes.append(contentsOf: customExcluded)
+                if let customExcluded = excludedActivityTypes {
+                    excludedTypes.append(contentsOf: customExcluded)
+                }
+
+                controller.excludedActivityTypes = excludedTypes
+            } else {
+                controller.excludedActivityTypes = excludedActivityTypes
             }
 
-            controller.excludedActivityTypes = excludedTypes
-        } else {
-            controller.excludedActivityTypes = excludedActivityTypes
+            return controller
         }
 
-        return controller
+        func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context)
+        {
+        }
     }
+#endif
 
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {
-        // 不需要更新
-    }
-}
-
-// MARK: - URL Identifiable 扩展
 extension URL: Identifiable {
     public var id: String { self.absoluteString }
 }
 
-#Preview {
-    // 预览示例
-    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("example.txt")
-    try? "Hello, World!".write(to: tempURL, atomically: true, encoding: .utf8)
-
-    return ActivityView(activityItems: [tempURL])
+struct ActivityView_Previews: PreviewProvider {
+    static var previews: some View {
+        ActivityView(activityItems: [])
+    }
 }

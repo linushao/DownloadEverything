@@ -1,19 +1,20 @@
 import Foundation
+
+#if os(iOS)
 import Kingfisher
 import Photos
 import UIKit
 
-/// Kingfisher自定义数据提供者，用于加载PHAsset图片
 public struct PHAssetImageDataProvider: ImageDataProvider {
-
+    
     public let assetIdentifier: String
     public let targetSize: CGSize
     public let contentMode: PHImageContentMode
-
+    
     public var cacheKey: String {
         "\(assetIdentifier)_\(targetSize.width)x\(targetSize.height)"
     }
-
+    
     public init(
         assetIdentifier: String, targetSize: CGSize = CGSize(width: 200, height: 200),
         contentMode: PHImageContentMode = .aspectFill
@@ -22,10 +23,10 @@ public struct PHAssetImageDataProvider: ImageDataProvider {
         self.targetSize = targetSize
         self.contentMode = contentMode
     }
-
+    
     public func data(handler: @escaping (Result<Data, Error>) -> Void) {
         let imageManager = PHImageManager.default()
-
+        
         guard
             let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetIdentifier], options: nil)
                 .firstObject
@@ -37,12 +38,12 @@ public struct PHAssetImageDataProvider: ImageDataProvider {
                         userInfo: [NSLocalizedDescriptionKey: "资源未找到"])))
             return
         }
-
+        
         let options = PHImageRequestOptions()
         options.isSynchronous = false
         options.deliveryMode = .fastFormat
         options.resizeMode = .exact
-
+        
         imageManager.requestImageDataAndOrientation(
             for: asset,
             options: options
@@ -59,3 +60,4 @@ public struct PHAssetImageDataProvider: ImageDataProvider {
         }
     }
 }
+#endif

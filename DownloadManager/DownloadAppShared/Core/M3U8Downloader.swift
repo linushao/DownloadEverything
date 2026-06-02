@@ -40,7 +40,7 @@ public final class M3U8Downloader {
     // MARK: - Properties
 
     private let parser: M3U8Parser
-    private let merger: TSMerger
+    private let merger: TSMergerProtocol
     private let networkService: NetworkService
     private let session: Session
 
@@ -67,7 +67,7 @@ public final class M3U8Downloader {
 
     public init(
         parser: M3U8Parser = M3U8Parser(),
-        merger: TSMerger = TSMerger(),
+        merger: TSMergerProtocol = TSMergerFactory.makeDefault(),
         networkService: NetworkService = .shared
     ) {
         self.parser = parser
@@ -117,7 +117,8 @@ public final class M3U8Downloader {
             try await merger.merge(
                 segments: mediaPlaylist.segments,
                 task: task,
-                outputURL: outputURL
+                outputURL: outputURL,
+                progressHandler: nil
             )
 
             // 4. 完成
@@ -160,7 +161,8 @@ public final class M3U8Downloader {
             try await merger.merge(
                 segments: playlist.segments,
                 task: task,
-                outputURL: outputURL
+                outputURL: outputURL,
+                progressHandler: nil
             )
 
             task.cleanupTempFiles()

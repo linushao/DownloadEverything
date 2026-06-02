@@ -7,8 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B8E5803530C59999F5F58598 /* Pods_DownloadManagerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA612FD4F20DD36F110BDA8E /* Pods_DownloadManagerTests.framework */; };
-		E131288E8BE3FA5E1221958B /* Pods_DownloadManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F09D7ADED6E6BDB17FF54398 /* Pods_DownloadManager.framework */; };
+		8AF77ABEC55F9CE864B9B3A5 /* Pods_DownloadManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 986AEB27536E4563EB1A7D82 /* Pods_DownloadManager.framework */; };
+		A1B2C3D4E5F6A7B8C9D0E1F15 /* DownloadManagerMac/App.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F10 /* DownloadManagerMac/App.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F16 /* DownloadManagerMac/MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F11 /* DownloadManagerMac/MainView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F17 /* DownloadManagerMac/AddDownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F12 /* DownloadManagerMac/AddDownloadView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F19 /* DownloadManagerMac/FileExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F14 /* DownloadManagerMac/FileExplorerView.swift */; };
+		AD930189F80C4B283A628E28 /* Pods_DownloadManagerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8FEE68628B932D1AE8AEDB10 /* Pods_DownloadManagerTests.framework */; };
+		E9727A6E9B3D9010737D25BA /* Pods_DownloadManagerMac.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A925832CEC7FD31A5A817D1 /* Pods_DownloadManagerMac.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,12 +37,20 @@
 		0B88EC492FC7116A00F9C352 /* DownloadManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DownloadManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B88EC592FC7116C00F9C352 /* DownloadManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DownloadManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B88EC632FC7116C00F9C352 /* DownloadManagerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DownloadManagerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		1FCE9BB7074DA99054D4FA91 /* Pods-DownloadManagerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManagerTests.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests.debug.xcconfig"; sourceTree = "<group>"; };
-		42F2C911DEE9C97B40D70599 /* Pods-DownloadManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.release.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.release.xcconfig"; sourceTree = "<group>"; };
-		6AA7559CBFBC518ACFDA1522 /* Pods-DownloadManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.debug.xcconfig"; sourceTree = "<group>"; };
-		AA612FD4F20DD36F110BDA8E /* Pods_DownloadManagerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManagerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D21554D31462F42080796DAE /* Pods-DownloadManagerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManagerTests.release.xcconfig"; path = "Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests.release.xcconfig"; sourceTree = "<group>"; };
-		F09D7ADED6E6BDB17FF54398 /* Pods_DownloadManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0BE12A592FCF05B000EFEFB9 /* DownloadManagerMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DownloadManagerMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A925832CEC7FD31A5A817D1 /* Pods_DownloadManagerMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManagerMac.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E8921648ED0209953A7C987 /* Pods-DownloadManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.debug.xcconfig"; sourceTree = "<group>"; };
+		8FEE68628B932D1AE8AEDB10 /* Pods_DownloadManagerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManagerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		986AEB27536E4563EB1A7D82 /* Pods_DownloadManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B2C3D4E5F6A7B8C9D0E1F10 /* DownloadManagerMac/App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/App.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F11 /* DownloadManagerMac/MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/MainView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F12 /* DownloadManagerMac/AddDownloadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/AddDownloadView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F14 /* DownloadManagerMac/FileExplorerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerMac/FileExplorerView.swift; sourceTree = "<group>"; };
+		A647695F19602F166936AC8F /* Pods-DownloadManagerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManagerTests.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests.debug.xcconfig"; sourceTree = "<group>"; };
+		B64B586DFBA94592E7C96ADD /* Pods-DownloadManagerMac.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManagerMac.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManagerMac/Pods-DownloadManagerMac.debug.xcconfig"; sourceTree = "<group>"; };
+		BB803A6E233B68CA041B73FD /* Pods-DownloadManager.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.release.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.release.xcconfig"; sourceTree = "<group>"; };
+		BEA613F670131F95FD95164F /* Pods-DownloadManagerMac.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManagerMac.release.xcconfig"; path = "Target Support Files/Pods-DownloadManagerMac/Pods-DownloadManagerMac.release.xcconfig"; sourceTree = "<group>"; };
+		DFEA2BCCA9C6CFB18CDD4438 /* Pods-DownloadManagerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManagerTests.release.xcconfig"; path = "Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -63,7 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E131288E8BE3FA5E1221958B /* Pods_DownloadManager.framework in Frameworks */,
+				8AF77ABEC55F9CE864B9B3A5 /* Pods_DownloadManager.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,7 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B8E5803530C59999F5F58598 /* Pods_DownloadManagerTests.framework in Frameworks */,
+				AD930189F80C4B283A628E28 /* Pods_DownloadManagerTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +92,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1B2C3D4E5F6A7B8C9D0E1F5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9727A6E9B3D9010737D25BA /* Pods_DownloadManagerMac.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,7 +114,8 @@
 				0B88EC662FC7116C00F9C352 /* DownloadManagerUITests */,
 				0B88EC4A2FC7116A00F9C352 /* Products */,
 				6F761FBF2AD50749EEAA77A0 /* Pods */,
-				B8C8AA63EFFFD3AAFFC50930 /* Frameworks */,
+				C43583E30A6DC1DB09FE583C /* Frameworks */,
+				0BE12A582FCF05B000EFEFB9 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -103,26 +125,41 @@
 				0B88EC492FC7116A00F9C352 /* DownloadManager.app */,
 				0B88EC592FC7116C00F9C352 /* DownloadManagerTests.xctest */,
 				0B88EC632FC7116C00F9C352 /* DownloadManagerUITests.xctest */,
+				0BE12A592FCF05B000EFEFB9 /* DownloadManagerMac.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		0BE12A582FCF05B000EFEFB9 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F6A7B8C9D0E1F10 /* DownloadManagerMac/App.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F11 /* DownloadManagerMac/MainView.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F12 /* DownloadManagerMac/AddDownloadView.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F14 /* DownloadManagerMac/FileExplorerView.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		6F761FBF2AD50749EEAA77A0 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				6AA7559CBFBC518ACFDA1522 /* Pods-DownloadManager.debug.xcconfig */,
-				42F2C911DEE9C97B40D70599 /* Pods-DownloadManager.release.xcconfig */,
-				1FCE9BB7074DA99054D4FA91 /* Pods-DownloadManagerTests.debug.xcconfig */,
-				D21554D31462F42080796DAE /* Pods-DownloadManagerTests.release.xcconfig */,
+				4E8921648ED0209953A7C987 /* Pods-DownloadManager.debug.xcconfig */,
+				BB803A6E233B68CA041B73FD /* Pods-DownloadManager.release.xcconfig */,
+				A647695F19602F166936AC8F /* Pods-DownloadManagerTests.debug.xcconfig */,
+				DFEA2BCCA9C6CFB18CDD4438 /* Pods-DownloadManagerTests.release.xcconfig */,
+				B64B586DFBA94592E7C96ADD /* Pods-DownloadManagerMac.debug.xcconfig */,
+				BEA613F670131F95FD95164F /* Pods-DownloadManagerMac.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		B8C8AA63EFFFD3AAFFC50930 /* Frameworks */ = {
+		C43583E30A6DC1DB09FE583C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				F09D7ADED6E6BDB17FF54398 /* Pods_DownloadManager.framework */,
-				AA612FD4F20DD36F110BDA8E /* Pods_DownloadManagerTests.framework */,
+				986AEB27536E4563EB1A7D82 /* Pods_DownloadManager.framework */,
+				8FEE68628B932D1AE8AEDB10 /* Pods_DownloadManagerTests.framework */,
+				4A925832CEC7FD31A5A817D1 /* Pods_DownloadManagerMac.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -134,12 +171,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0B88EC6D2FC7116C00F9C352 /* Build configuration list for PBXNativeTarget "DownloadManager" */;
 			buildPhases = (
-				C2BEF07CE79ABE9B869985CC /* [CP] Check Pods Manifest.lock */,
+				AF5D516E63A9991AC23B5779 /* [CP] Check Pods Manifest.lock */,
 				0B88EC452FC7116A00F9C352 /* Sources */,
 				0B88EC462FC7116A00F9C352 /* Frameworks */,
 				0B88EC472FC7116A00F9C352 /* Resources */,
-				8B30EB7EA66110FE2CCF7A28 /* [CP] Embed Pods Frameworks */,
-				587D554072D4CAAFC2E68037 /* [CP] Copy Pods Resources */,
+				52B765A08B35D05A111F3423 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -157,11 +193,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0B88EC702FC7116C00F9C352 /* Build configuration list for PBXNativeTarget "DownloadManagerTests" */;
 			buildPhases = (
-				80FF7C5B8FBC93A7F9198226 /* [CP] Check Pods Manifest.lock */,
+				C375FD5F8FDD7DBD0F4372F2 /* [CP] Check Pods Manifest.lock */,
 				0B88EC552FC7116C00F9C352 /* Sources */,
 				0B88EC562FC7116C00F9C352 /* Frameworks */,
 				0B88EC572FC7116C00F9C352 /* Resources */,
-				0526B11FD084AC4EEBA909C7 /* [CP] Copy Pods Resources */,
+				9B72BA97E5751EF7E561791B /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -196,6 +232,28 @@
 			productName = DownloadManagerUITests;
 			productReference = 0B88EC632FC7116C00F9C352 /* DownloadManagerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		A1B2C3D4E5F6A7B8C9D0E1F4 /* DownloadManagerMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1B2C3D4E5F6A7B8C9D0E1F6 /* Build configuration list for PBXNativeTarget "DownloadManagerMac" */;
+			buildPhases = (
+				210092D6D9394567D10200CB /* [CP] Check Pods Manifest.lock */,
+				A1B2C3D4E5F6A7B8C9D0E1F7 /* Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F5 /* Frameworks */,
+				A1B2C3D4E5F6A7B8C9D0E1F8 /* Resources */,
+				C68DFDED3B5350CC21C20C73 /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				0B88EC4B2FC7116A00F9C352 /* DownloadManager */,
+			);
+			name = DownloadManagerMac;
+			productName = DownloadManagerMac;
+			productReference = 0BE12A592FCF05B000EFEFB9 /* DownloadManagerMac.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -237,6 +295,7 @@
 				0B88EC482FC7116A00F9C352 /* DownloadManager */,
 				0B88EC582FC7116C00F9C352 /* DownloadManagerTests */,
 				0B88EC622FC7116C00F9C352 /* DownloadManagerUITests */,
+				A1B2C3D4E5F6A7B8C9D0E1F4 /* DownloadManagerMac */,
 			);
 		};
 /* End PBXProject section */
@@ -263,31 +322,39 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1B2C3D4E5F6A7B8C9D0E1F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0526B11FD084AC4EEBA909C7 /* [CP] Copy Pods Resources */ = {
+		210092D6D9394567D10200CB /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
-			name = "[CP] Copy Pods Resources";
+			name = "[CP] Check Pods Manifest.lock";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-DownloadManagerMac-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources.sh\"\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		587D554072D4CAAFC2E68037 /* [CP] Copy Pods Resources */ = {
+		52B765A08B35D05A111F3423 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -308,7 +375,50 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		80FF7C5B8FBC93A7F9198226 /* [CP] Check Pods Manifest.lock */ = {
+		9B72BA97E5751EF7E561791B /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerTests/Pods-DownloadManagerTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		AF5D516E63A9991AC23B5779 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-DownloadManager-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C375FD5F8FDD7DBD0F4372F2 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -330,47 +440,25 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		8B30EB7EA66110FE2CCF7A28 /* [CP] Embed Pods Frameworks */ = {
+		C68DFDED3B5350CC21C20C73 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerMac/Pods-DownloadManagerMac-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			inputPaths = (
 			);
-			name = "[CP] Embed Pods Frameworks";
+			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerMac/Pods-DownloadManagerMac-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownloadManager/Pods-DownloadManager-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C2BEF07CE79ABE9B869985CC /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-DownloadManager-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DownloadManagerMac/Pods-DownloadManagerMac-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -394,6 +482,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1B2C3D4E5F6A7B8C9D0E1F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B2C3D4E5F6A7B8C9D0E1F15 /* DownloadManagerMac/App.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F16 /* DownloadManagerMac/MainView.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F17 /* DownloadManagerMac/AddDownloadView.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F19 /* DownloadManagerMac/FileExplorerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -534,7 +633,7 @@
 		};
 		0B88EC6E2FC7116C00F9C352 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6AA7559CBFBC518ACFDA1522 /* Pods-DownloadManager.debug.xcconfig */;
+			baseConfigurationReference = 4E8921648ED0209953A7C987 /* Pods-DownloadManager.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -566,7 +665,7 @@
 		};
 		0B88EC6F2FC7116C00F9C352 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 42F2C911DEE9C97B40D70599 /* Pods-DownloadManager.release.xcconfig */;
+			baseConfigurationReference = BB803A6E233B68CA041B73FD /* Pods-DownloadManager.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -598,7 +697,7 @@
 		};
 		0B88EC712FC7116C00F9C352 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1FCE9BB7074DA99054D4FA91 /* Pods-DownloadManagerTests.debug.xcconfig */;
+			baseConfigurationReference = A647695F19602F166936AC8F /* Pods-DownloadManagerTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -618,7 +717,7 @@
 		};
 		0B88EC722FC7116C00F9C352 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D21554D31462F42080796DAE /* Pods-DownloadManagerTests.release.xcconfig */;
+			baseConfigurationReference = DFEA2BCCA9C6CFB18CDD4438 /* Pods-DownloadManagerTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -670,6 +769,54 @@
 			};
 			name = Release;
 		};
+		A1B2C3D4E5F6A7B8C9D0E1F1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B64B586DFBA94592E7C96ADD /* Pods-DownloadManagerMac.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 466HP24FN5;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.acewei.DownloadManagerMac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A1B2C3D4E5F6A7B8C9D0E1F1B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = BEA613F670131F95FD95164F /* Pods-DownloadManagerMac.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 466HP24FN5;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.acewei.DownloadManagerMac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -705,6 +852,15 @@
 			buildConfigurations = (
 				0B88EC742FC7116C00F9C352 /* Debug */,
 				0B88EC752FC7116C00F9C352 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1B2C3D4E5F6A7B8C9D0E1F6 /* Build configuration list for PBXNativeTarget "DownloadManagerMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D4E5F6A7B8C9D0E1F1A /* Debug */,
+				A1B2C3D4E5F6A7B8C9D0E1F1B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

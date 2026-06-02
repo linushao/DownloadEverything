@@ -28,8 +28,11 @@ struct ImagePreviewView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationTitle(fileName)
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("关闭", action: dismiss.callAsFunction)
                 }
@@ -38,6 +41,16 @@ struct ImagePreviewView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     ShareButton(url: imageURL)
                 }
+                #else
+                ToolbarItem(placement: .primaryAction) {
+                    Button("关闭", action: dismiss.callAsFunction)
+                }
+                
+                // 分享按钮
+                ToolbarItem(placement: .secondaryAction) {
+                    ShareButton(url: imageURL)
+                }
+                #endif
             }
         }
     }

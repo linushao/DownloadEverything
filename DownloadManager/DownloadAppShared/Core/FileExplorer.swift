@@ -1,5 +1,24 @@
 import Foundation
+import SwiftUI
 import UniformTypeIdentifiers
+
+extension URL {
+    var parentDirectory: URL? {
+        let parent = self.deletingLastPathComponent()
+        if parent.path == self.path {
+            return nil
+        }
+        return parent
+    }
+}
+
+extension FileManager {
+    func isDirectory(at url: URL) -> Bool {
+        var isDirectory: ObjCBool = false
+        self.fileExists(atPath: url.path, isDirectory: &isDirectory)
+        return isDirectory.boolValue
+    }
+}
 
 /// 文件项类型
 enum FileItemType {
@@ -96,7 +115,7 @@ struct FileItem: Identifiable, Hashable {
 }
 
 /// 文件浏览器，用于浏览本地文件系统
-class FileExplorer {
+class FileExplorer: ObservableObject {
 
     // MARK: - Properties
 

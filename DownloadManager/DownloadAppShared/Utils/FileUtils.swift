@@ -31,6 +31,20 @@ public final class FileUtils {
         return documentsDirectory
     }
 
+    /// 默认下载目录（macOS使用系统下载目录）
+    public static var defaultDownloadDirectory: URL {
+        #if os(macOS)
+            if let downloadsDir = FileManager.default.urls(
+                for: .downloadsDirectory, in: .userDomainMask
+            ).first {
+                return downloadsDir
+            }
+            return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        #else
+            return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        #endif
+    }
+
     // MARK: - 目录操作
 
     /// 创建目录（如果不存在）

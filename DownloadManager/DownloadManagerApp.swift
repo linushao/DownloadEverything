@@ -9,7 +9,9 @@ import CoreData
 import Kingfisher
 import SwiftUI
 
+#if os(iOS)
 @main
+#endif
 struct DownloadManagerApp: App {
     let persistenceController = CoreDataManager.shared
 

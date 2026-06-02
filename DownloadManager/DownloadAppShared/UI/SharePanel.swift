@@ -34,7 +34,9 @@ struct SharePanel: View {
                 }
             }
             .navigationTitle("分享文件")
-            .navigationBarTitleDisplayMode(.inline)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
@@ -147,7 +149,11 @@ extension SharePanel {
             .padding(.bottom)
         }
         .padding(.top)
-        .background(Color(.systemBackground))
+        #if os(iOS)
+            .background(Color(.systemBackground))
+        #else
+            .background(Color(NSColor.windowBackgroundColor))
+        #endif
     }
 }
 
@@ -187,49 +193,13 @@ struct FileBrowserView: View {
 
     private var fileList: some View {
         List(viewModel.currentFiles, selection: $viewModel.selectedFileItem) { item in
-            FileItemRow(item: item, isSelected: viewModel.selectedFileItem?.id == item.id)
+            FileItemRow(file: item, isSelected: viewModel.selectedFileItem?.id == item.id)
                 .contentShape(Rectangle())
                 .onTapGesture {
                     viewModel.selectFileItem(item)
                 }
         }
         .listStyle(.plain)
-    }
-}
-
-// MARK: - File Item Row
-
-struct FileItemRow: View {
-    let item: FileItem
-    let isSelected: Bool
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: item.iconName)
-                .font(.title2)
-                .foregroundColor(.blue)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.name)
-                    .font(.body)
-                    .lineLimit(1)
-
-                if item.type == .file {
-                    Text(item.formattedSize)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-
-            Spacer()
-
-            if isSelected {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.blue)
-                    .font(.title2)
-            }
-        }
-        .padding(.vertical, 8)
     }
 }
 
@@ -268,7 +238,11 @@ struct PhotoItemCell: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            KFImage(source: .provider(PHAssetImageDataProvider(assetIdentifier: item.assetIdentifier)))
+            #if os(iOS)
+                KFImage(
+                    source: .provider(
+                        PHAssetImageDataProvider(assetIdentifier: item.assetIdentifier))
+                )
                 .placeholder {
                     Color(.systemGray5)
                         .frame(height: 120)
@@ -282,6 +256,15 @@ struct PhotoItemCell: View {
                 .aspectRatio(contentMode: .fill)
                 .frame(height: 120)
                 .clipped()
+            #else
+                Color(NSColor.placeholderTextColor)
+                    .frame(height: 120)
+                    .overlay(
+                        Image(systemName: item.iconName)
+                            .font(.largeTitle)
+                            .foregroundColor(.white)
+                    )
+            #endif
 
             if item.type == .video {
                 VStack {
@@ -367,7 +350,9 @@ struct PermissionSheet: View {
                 }
             }
             .navigationTitle("分享详情")
-            .navigationBarTitleDisplayMode(.inline)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") {
@@ -523,7 +508,12 @@ class SharePanelViewModel: ObservableObject {
             return
         }
 
-        UIPasteboard.general.string = shareLink.absoluteString
+        #if os(iOS)
+            UIPasteboard.general.string = shareLink.absoluteString
+        #else
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(shareLink.absoluteString, forType: .string)
+        #endif
     }
 
     private func requestPhotoAuthorizationIfNeeded() {
@@ -553,6 +543,9 @@ extension ShareItem {
     }
 }
 
-#Preview {
-    SharePanel(selectedFile: nil, selectedPhoto: nil)
+// MARK: - Preview
+struct SharePanel_Previews: PreviewProvider {
+    static var previews: some View {
+        SharePanel(selectedFile: nil, selectedPhoto: nil)
+    }
 }
