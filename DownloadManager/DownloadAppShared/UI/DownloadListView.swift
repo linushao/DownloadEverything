@@ -574,16 +574,10 @@ struct DownloadListView: View {
             return
         }
 
-        isLoadingSuggestedName = true
-        defer { isLoadingSuggestedName = false }
-
-        do {
-            let fileName = try await m3u8Parser.parseAndSuggestFileName(url: url)
-            suggestedFileName = fileName
-        } catch {
-            // 如果解析失败，使用默认的文件名生成方式
-            let defaultName = url.lastPathComponent.replacingOccurrences(of: ".m3u8", with: ".mp4")
-            suggestedFileName = defaultName.isEmpty ? "video.mp4" : defaultName
-        }
+        // 简单验证模式：只根据 URL 生成建议文件名，不下载解析 m3u8
+        let defaultName = url.lastPathComponent
+            .replacingOccurrences(of: ".m3u8", with: ".mp4")
+            .replacingOccurrences(of: ".m3u", with: ".mp4")
+        suggestedFileName = defaultName.isEmpty ? "video.mp4" : defaultName
     }
 }

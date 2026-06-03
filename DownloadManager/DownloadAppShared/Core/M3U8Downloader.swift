@@ -258,6 +258,7 @@ public final class M3U8Downloader {
 
         // 检查文件是否已存在
         if FileManager.default.fileExists(atPath: destinationURL.path) {
+            print("✅ [M3U8下载] 分片 #\(index) 已存在，跳过: \(segment.url.absoluteString)")
             task.markSegmentDownloaded(index)
             return
         }
@@ -272,9 +273,11 @@ public final class M3U8Downloader {
             do {
                 // 更新当前分片信息
                 task.updateCurrentSegment(index: index, url: segment.url)
+                print("⬇️ [M3U8下载] 开始下载分片 #\(index): \(segment.url.absoluteString)")
 
                 try await downloadFile(url: segment.url, destination: destinationURL)
                 task.markSegmentDownloaded(index)
+                print("✅ [M3U8下载] 分片 #\(index) 下载完成: \(segment.url.absoluteString)")
 
                 // 检查速度限制
                 await checkSpeedLimit()
@@ -286,10 +289,12 @@ public final class M3U8Downloader {
             } catch {
                 remainingRetries -= 1
                 if remainingRetries < 0 {
+                    print("❌ [M3U8下载] 分片 #\(index) 下载失败: \(segment.url.absoluteString), 错误: \(error.localizedDescription)")
                     // 清空当前分片信息
                     task.updateCurrentSegment(index: nil, url: nil)
                     throw M3U8DownloaderError.downloadFailed(error)
                 }
+                print("⚠️ [M3U8下载] 分片 #\(index) 下载失败，剩余重试次数 \(remainingRetries): \(segment.url.absoluteString), 错误: \(error.localizedDescription)")
                 // 等待后重试
                 try await Task.sleep(nanoseconds: 1_000_000_000)  // 1秒
             }

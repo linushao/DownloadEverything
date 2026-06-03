@@ -124,6 +124,7 @@ public final class M3U8Parser {
                 } else {
                     // 这是分片 URL
                     if let url = resolveURL(line, baseURL: baseURL) {
+                        print("🔍 [M3U8解析] 找到分片 #\(sequenceNumber): \(url.absoluteString)")
                         let segment = MediaSegment(
                             sequenceNumber: sequenceNumber,
                             url: url,
@@ -236,6 +237,8 @@ public final class M3U8Parser {
             if currentIndex < lines.count {
                 let urlLine = lines[currentIndex]
                 if let url = resolveURL(urlLine, baseURL: baseURL) {
+                    print(
+                        "🔍 [M3U8解析] 找到分片 #\(sequenceNumber) (\(duration)s): \(url.absoluteString)")
                     let segment = MediaSegment(
                         sequenceNumber: sequenceNumber,
                         url: url,
@@ -333,7 +336,8 @@ public final class M3U8Parser {
         if path.hasPrefix("http://") || path.hasPrefix("https://") {
             return URL(string: path)
         } else {
-            return URL(string: path, relativeTo: baseURL)?.absoluteURL
+            let baseDirectoryURL = baseURL.deletingLastPathComponent()
+            return URL(string: path, relativeTo: baseDirectoryURL)?.absoluteURL
         }
     }
 
