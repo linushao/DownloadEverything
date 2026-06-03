@@ -16,7 +16,7 @@ import WebKit
     import AppKit
 #endif
 
-// MARK: - Sniffer Result Model
+// MARK: - Sniffer Result Model (保持向后兼容)
 
 struct SnifferResult: Identifiable {
     let id = UUID()
@@ -30,6 +30,13 @@ struct SnifferResult: Identifiable {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
         return formatter.string(fromByteCount: size)
+    }
+
+    init(from sniffedVideo: SniffedVideo) {
+        self.url = sniffedVideo.url
+        self.format = sniffedVideo.format.rawValue
+        self.fileName = sniffedVideo.fileName
+        self.fileSize = sniffedVideo.fileSize
     }
 }
 
@@ -56,11 +63,7 @@ class BrowserViewModel: ObservableObject {
     // MARK: - Private Properties
 
     private var cancellables = Set<AnyCancellable>()
-    private var interceptedURLs = Set<String>()
-
-    // MARK: - Supported Video Formats
-
-    private let supportedFormats = ["mp4", "m3u8", "webm", "flv", "mov", "avi", "mkv"]
+    private let snifferManager = URLSnifferManager.shared
 
     // MARK: - Initialization
 
@@ -94,9 +97,9 @@ class BrowserViewModel: ObservableObject {
 
     func toggleSniffer() {
         isSnifferEnabled.toggle()
+        snifferManager.isEnabled = isSnifferEnabled
         if !isSnifferEnabled {
-            snifferResults.removeAll()
-            interceptedURLs.removeAll()
+            snifferManager.clearResults()
         }
     }
 
@@ -124,43 +127,29 @@ class BrowserViewModel: ObservableObject {
     // MARK: - Sniffer Methods
 
     private func setupSnifferObserver() {
-        // 监听 WebView 的 URL 变化来嗅探视频
+        // 监听 URLSnifferManager 的嗅探结果
+        snifferManager.$sniffedVideos
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] videos in
+                self?.snifferResults = videos.map { SnifferResult(from: $0) }
+            }
+            .store(in: &cancellables)
+
+        // 同步嗅探开关状态
+        snifferManager.isEnabled = isSnifferEnabled
     }
 
     func checkAndAddSnifferResult(url: URL) {
         guard isSnifferEnabled else { return }
-
-        // 检查是否是视频 URL
-        let urlString = url.absoluteString.lowercased()
-
-        for format in supportedFormats {
-            if urlString.contains(".\(format)") || urlString.contains("format=\(format)") {
-                addSnifferResult(url: url, format: format)
-                return
-            }
-        }
-    }
-
-    private func addSnifferResult(url: URL, format: String) {
-        // 去重检查
-        guard !interceptedURLs.contains(url.absoluteString) else { return }
-        interceptedURLs.insert(url.absoluteString)
-
-        let fileName = url.lastPathComponent.isEmpty ? "video.\(format)" : url.lastPathComponent
-
-        let result = SnifferResult(
-            url: url,
-            format: format,
-            fileName: fileName,
-            fileSize: nil
-        )
-
-        snifferResults.insert(result, at: 0)
+        snifferManager.checkAndSniffURL(url)
     }
 
     func clearSnifferResults() {
-        snifferResults.removeAll()
-        interceptedURLs.removeAll()
+        snifferManager.clearResults()
+    }
+
+    func configureWebView(_ webView: WKWebView) {
+        snifferManager.configureWebView(webView)
     }
 
     // MARK: - Private Methods
