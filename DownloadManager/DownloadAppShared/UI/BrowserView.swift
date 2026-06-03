@@ -318,6 +318,21 @@ import WebKit
                 _ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
             ) {
+                // URL 验证和视频嗅探
+                if let requestURL = navigationAction.request.url {
+                    // 更新地址栏（仅针对主框架导航）
+                    if navigationAction.targetFrame == nil
+                        || navigationAction.targetFrame?.isMainFrame == true
+                    {
+                        DispatchQueue.main.async {
+                            self.viewModel.urlText = requestURL.absoluteString
+                        }
+                    }
+
+                    // 嗅探视频 URL
+                    viewModel.checkAndAddSnifferResult(url: requestURL)
+                }
+
                 decisionHandler(.allow)
             }
         }
@@ -595,6 +610,21 @@ import WebKit
                 _ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
             ) {
+                // URL 验证和视频嗅探
+                if let requestURL = navigationAction.request.url {
+                    // 更新地址栏（仅针对主框架导航）
+                    if navigationAction.targetFrame == nil
+                        || navigationAction.targetFrame?.isMainFrame == true
+                    {
+                        DispatchQueue.main.async {
+                            self.viewModel.urlText = requestURL.absoluteString
+                        }
+                    }
+
+                    // 嗅探视频 URL
+                    viewModel.checkAndAddSnifferResult(url: requestURL)
+                }
+
                 decisionHandler(.allow)
             }
         }
