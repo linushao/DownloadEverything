@@ -5,15 +5,15 @@
 //  WebView 视频 URL 嗅探器 - 浏览器视图模型
 //
 
-import Foundation
-import WebKit
 import Combine
+import Foundation
 import SwiftUI
+import WebKit
 
 #if os(iOS)
-import UIKit
+    import UIKit
 #elseif os(macOS)
-import AppKit
+    import AppKit
 #endif
 
 // MARK: - Sniffer Result Model
@@ -47,6 +47,7 @@ class BrowserViewModel: ObservableObject {
     @Published var currentURL: URL?
     @Published var isSnifferEnabled: Bool = true
     @Published var snifferResults: [SnifferResult] = []
+    @Published var loadProgress: Double = 0
 
     // MARK: - WebView Reference
 
@@ -178,7 +179,8 @@ class BrowserViewModel: ObservableObject {
         }
 
         // 尝试作为搜索引擎查询
-        let encodedQuery = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? urlString
+        let encodedQuery =
+            urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? urlString
         if let searchURL = URL(string: "https://www.google.com/search?q=\(encodedQuery)") {
             return searchURL
         }

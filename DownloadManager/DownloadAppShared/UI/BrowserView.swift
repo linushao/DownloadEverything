@@ -5,6 +5,7 @@
 //  WebView 视频 URL 嗅探器 - 浏览器视图
 //
 
+import Combine
 import SwiftUI
 import WebKit
 
@@ -58,58 +59,78 @@ import WebKit
         // MARK: - Toolbar View
 
         private var toolbarView: some View {
-            HStack(spacing: 12) {
-                // 导航按钮
-                HStack(spacing: 8) {
-                    Button(action: { viewModel.goBack() }) {
-                        Image(systemName: "chevron.left")
-                    }
-                    .disabled(!viewModel.canGoBack)
-
-                    Button(action: { viewModel.goForward() }) {
-                        Image(systemName: "chevron.right")
-                    }
-                    .disabled(!viewModel.canGoForward)
-
-                    Button(action: { viewModel.reload() }) {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                }
-                .font(.system(size: 16))
-
-                // 地址栏
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-
-                    TextField("输入网址", text: $viewModel.urlText)
-                        .textFieldStyle(.plain)
-                        .autocapitalization(.none)
-                        .autocorrectionDisabled()
-                        .keyboardType(.URL)
-                        .onSubmit {
-                            viewModel.loadURL()
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    // 导航按钮
+                    HStack(spacing: 8) {
+                        Button(action: { viewModel.goBack() }) {
+                            Image(systemName: "chevron.left")
                         }
+                        .disabled(!viewModel.canGoBack)
 
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .scaleEffect(0.7)
+                        Button(action: { viewModel.goForward() }) {
+                            Image(systemName: "chevron.right")
+                        }
+                        .disabled(!viewModel.canGoForward)
+
+                        // 停止/刷新按钮
+                        Button(action: {
+                            if viewModel.isLoading {
+                                viewModel.stopLoading()
+                            } else {
+                                viewModel.reload()
+                            }
+                        }) {
+                            Image(systemName: viewModel.isLoading ? "xmark" : "arrow.clockwise")
+                        }
                     }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(10)
+                    .font(.system(size: 16))
 
-                // 嗅探开关
-                Toggle(isOn: $viewModel.isSnifferEnabled) {
-                    Image(systemName: "antenna.radiowaves.left.and.right")
+                    // 地址栏
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+
+                        TextField("输入网址", text: $viewModel.urlText)
+                            .textFieldStyle(.plain)
+                            .autocapitalization(.none)
+                            .autocorrectionDisabled()
+                            .keyboardType(.URL)
+                            .onSubmit {
+                                viewModel.loadURL()
+                            }
+
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .cornerRadius(10)
+
+                    // 嗅探开关
+                    Toggle(isOn: $viewModel.isSnifferEnabled) {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                    }
+                    .toggleStyle(.button)
                 }
-                .toggleStyle(.button)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color(UIColor.systemBackground))
+
+                // 加载进度条
+                if viewModel.loadProgress > 0 && viewModel.loadProgress < 1 {
+                    GeometryReader { geometry in
+                        Rectangle()
+                            .fill(Color.accentColor)
+                            .frame(width: geometry.size.width * viewModel.loadProgress, height: 2)
+                    }
+                    .frame(height: 2)
+                    .background(Color(UIColor.secondarySystemBackground))
+                }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(UIColor.systemBackground))
         }
 
         // MARK: - Sniffer Panel View
@@ -245,16 +266,32 @@ import WebKit
 
         class Coordinator: NSObject, WKNavigationDelegate {
             let viewModel: BrowserViewModel
+            private var cancellables = Set<AnyCancellable>()
+            private weak var webView: WKWebView?
 
             init(viewModel: BrowserViewModel) {
                 self.viewModel = viewModel
             }
 
+            func setupProgressObservation(for webView: WKWebView) {
+                self.webView = webView
+                webView.publisher(for: \.estimatedProgress)
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] progress in
+                        self?.viewModel.loadProgress = progress
+                    }
+                    .store(in: &cancellables)
+            }
+
             func webView(
                 _ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!
             ) {
+                if self.webView !== webView {
+                    setupProgressObservation(for: webView)
+                }
                 DispatchQueue.main.async {
                     self.viewModel.isLoading = true
+                    self.viewModel.loadProgress = 0
                 }
             }
 
@@ -264,6 +301,7 @@ import WebKit
                     self.viewModel.canGoBack = webView.canGoBack
                     self.viewModel.canGoForward = webView.canGoForward
                     self.viewModel.currentURL = webView.url
+                    self.viewModel.loadProgress = 1.0
                 }
             }
 
@@ -272,6 +310,7 @@ import WebKit
             ) {
                 DispatchQueue.main.async {
                     self.viewModel.isLoading = false
+                    self.viewModel.loadProgress = 0
                 }
             }
 
@@ -315,53 +354,73 @@ import WebKit
         }
 
         private var toolbarView: some View {
-            HStack(spacing: 12) {
-                HStack(spacing: 8) {
-                    Button(action: { viewModel.goBack() }) {
-                        Image(systemName: "chevron.left")
-                    }
-                    .disabled(!viewModel.canGoBack)
-
-                    Button(action: { viewModel.goForward() }) {
-                        Image(systemName: "chevron.right")
-                    }
-                    .disabled(!viewModel.canGoForward)
-
-                    Button(action: { viewModel.reload() }) {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                }
-                .font(.system(size: 16))
-
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-
-                    TextField("输入网址", text: $viewModel.urlText)
-                        .textFieldStyle(.plain)
-                        .autocorrectionDisabled()
-                        .onSubmit {
-                            viewModel.loadURL()
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    HStack(spacing: 8) {
+                        Button(action: { viewModel.goBack() }) {
+                            Image(systemName: "chevron.left")
                         }
+                        .disabled(!viewModel.canGoBack)
 
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .scaleEffect(0.7)
+                        Button(action: { viewModel.goForward() }) {
+                            Image(systemName: "chevron.right")
+                        }
+                        .disabled(!viewModel.canGoForward)
+
+                        // 停止/刷新按钮
+                        Button(action: {
+                            if viewModel.isLoading {
+                                viewModel.stopLoading()
+                            } else {
+                                viewModel.reload()
+                            }
+                        }) {
+                            Image(systemName: viewModel.isLoading ? "xmark" : "arrow.clockwise")
+                        }
                     }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color(NSColor.controlBackgroundColor))
-                .cornerRadius(10)
+                    .font(.system(size: 16))
 
-                Toggle(isOn: $viewModel.isSnifferEnabled) {
-                    Image(systemName: "antenna.radiowaves.left.and.right")
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+
+                        TextField("输入网址", text: $viewModel.urlText)
+                            .textFieldStyle(.plain)
+                            .autocorrectionDisabled()
+                            .onSubmit {
+                                viewModel.loadURL()
+                            }
+
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(10)
+
+                    Toggle(isOn: $viewModel.isSnifferEnabled) {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                    }
+                    .toggleStyle(.button)
                 }
-                .toggleStyle(.button)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color(NSColor.windowBackgroundColor))
+
+                // 加载进度条
+                if viewModel.loadProgress > 0 && viewModel.loadProgress < 1 {
+                    GeometryReader { geometry in
+                        Rectangle()
+                            .fill(Color.accentColor)
+                            .frame(width: geometry.size.width * viewModel.loadProgress, height: 2)
+                    }
+                    .frame(height: 2)
+                    .background(Color(NSColor.controlBackgroundColor))
+                }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(NSColor.windowBackgroundColor))
         }
 
         private var snifferPanelView: some View {
@@ -484,16 +543,32 @@ import WebKit
 
         class Coordinator: NSObject, WKNavigationDelegate {
             let viewModel: BrowserViewModel
+            private var cancellables = Set<AnyCancellable>()
+            private weak var webView: WKWebView?
 
             init(viewModel: BrowserViewModel) {
                 self.viewModel = viewModel
             }
 
+            func setupProgressObservation(for webView: WKWebView) {
+                self.webView = webView
+                webView.publisher(for: \.estimatedProgress)
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] progress in
+                        self?.viewModel.loadProgress = progress
+                    }
+                    .store(in: &cancellables)
+            }
+
             func webView(
                 _ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!
             ) {
+                if self.webView !== webView {
+                    setupProgressObservation(for: webView)
+                }
                 DispatchQueue.main.async {
                     self.viewModel.isLoading = true
+                    self.viewModel.loadProgress = 0
                 }
             }
 
@@ -503,6 +578,7 @@ import WebKit
                     self.viewModel.canGoBack = webView.canGoBack
                     self.viewModel.canGoForward = webView.canGoForward
                     self.viewModel.currentURL = webView.url
+                    self.viewModel.loadProgress = 1.0
                 }
             }
 
@@ -511,6 +587,7 @@ import WebKit
             ) {
                 DispatchQueue.main.async {
                     self.viewModel.isLoading = false
+                    self.viewModel.loadProgress = 0
                 }
             }
 
