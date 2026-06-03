@@ -34,6 +34,18 @@ struct MainView: View {
                     .foregroundColor(selectedTab == 1 ? .white : .primary)
                 }
 
+                Button(action: { selectedTab = 2 }) {
+                    HStack {
+                        Image(systemName: "globe")
+                        Text("浏览器")
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(selectedTab == 2 ? Color.accentColor : Color.clear)
+                    .foregroundColor(selectedTab == 2 ? .white : .primary)
+                }
+
                 Divider()
 
                 Button(action: { showAddDownload = true }) {
@@ -46,7 +58,7 @@ struct MainView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                Button(action: { selectedTab = 2 }) {
+                Button(action: { selectedTab = 3 }) {
                     HStack {
                         Image(systemName: "gear")
                         Text("设置")
@@ -54,8 +66,8 @@ struct MainView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(selectedTab == 2 ? Color.accentColor : Color.clear)
-                    .foregroundColor(selectedTab == 2 ? .white : .primary)
+                    .background(selectedTab == 3 ? Color.accentColor : Color.clear)
+                    .foregroundColor(selectedTab == 3 ? .white : .primary)
                 }
 
                 Spacer()
@@ -92,6 +104,8 @@ struct MainView: View {
                     DownloadListView()
                 } else if selectedTab == 1 {
                     FileExplorerView()
+                } else if selectedTab == 2 {
+                    BrowserView()
                 } else {
                     SettingsView()
                 }
@@ -113,6 +127,8 @@ struct MainView: View {
         case 1:
             return "文件管理"
         case 2:
+            return "浏览器"
+        case 3:
             return "设置"
         default:
             return ""
