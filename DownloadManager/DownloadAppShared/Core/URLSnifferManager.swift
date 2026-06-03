@@ -117,6 +117,22 @@ final class URLSnifferManager: NSObject, ObservableObject {
 
         // 注入 JS 监听网络请求（辅助方案）
         injectNetworkListenerScript(into: userContentController)
+        // 注入 HTML 扫描脚本
+        injectHTMLScannerScript(into: userContentController)
+    }
+
+    func scanHTMLForVideos(in webView: WKWebView) {
+        guard isEnabled else { return }
+
+        let script = """
+            window.scanForVideos();
+            """
+
+        webView.evaluateJavaScript(script) { _, error in
+            if let error = error {
+                print("⚠️ HTML 扫描失败: \(error)")
+            }
+        }
     }
 
     func checkAndSniffURL(_ url: URL, completion: ((SniffedVideo?) -> Void)? = nil) {
@@ -202,6 +218,102 @@ final class URLSnifferManager: NSObject, ObservableObject {
 
         userContentController.addUserScript(script)
         userContentController.add(self, name: "videoSniffer")
+    }
+
+    private func injectHTMLScannerScript(into userContentController: WKUserContentController) {
+        // HTML 扫描脚本，查找 .mp4 和 .m3u8 URL
+        let scriptSource = """
+            (function() {
+                window.scanForVideos = function() {
+                    const urls = new Set();
+                    const baseURL = window.location.href;
+                    
+                    // 辅助函数：解析相对 URL
+                    const resolveURL = function(url) {
+                        if (!url) return null;
+                        url = url.trim();
+                        if (url.startsWith('http://') || url.startsWith('https://')) {
+                            return url;
+                        }
+                        try {
+                            return new URL(url, baseURL).href;
+                        } catch(e) {
+                            return null;
+                        }
+                    };
+                    
+                    // 辅助函数：检查 URL 是否是视频
+                    const isVideoURL = function(url) {
+                        if (!url) return false;
+                        const lowerURL = url.toLowerCase();
+                        return lowerURL.includes('.mp4') || lowerURL.includes('.m3u8');
+                    };
+                    
+                    // 1. 查找 <video> 标签的 src
+                    document.querySelectorAll('video').forEach(function(video) {
+                        if (video.src) {
+                            const resolved = resolveURL(video.src);
+                            if (resolved && isVideoURL(resolved)) {
+                                urls.add(resolved);
+                            }
+                        }
+                        // 查找 <source> 子标签
+                        video.querySelectorAll('source').forEach(function(source) {
+                            if (source.src) {
+                                const resolved = resolveURL(source.src);
+                                if (resolved && isVideoURL(resolved)) {
+                                    urls.add(resolved);
+                                }
+                            }
+                        });
+                    });
+                    
+                    // 2. 查找 <a> 标签的 href
+                    document.querySelectorAll('a[href]').forEach(function(link) {
+                        const resolved = resolveURL(link.href);
+                        if (resolved && isVideoURL(resolved)) {
+                            urls.add(resolved);
+                        }
+                    });
+                    
+                    // 3. 查找 <iframe> 标签的 src
+                    document.querySelectorAll('iframe[src]').forEach(function(iframe) {
+                        const resolved = resolveURL(iframe.src);
+                        if (resolved && isVideoURL(resolved)) {
+                            urls.add(resolved);
+                        }
+                    });
+                    
+                    // 4. 在页面文本中查找 URL（简单正则匹配）
+                    const pageText = document.body.innerHTML;
+                    const urlPattern = /https?:\\/\\/[^\\s\"'<>]+\\.(mp4|m3u8)/gi;
+                    let match;
+                    while ((match = urlPattern.exec(pageText)) !== null) {
+                        const resolved = resolveURL(match[0]);
+                        if (resolved) {
+                            urls.add(resolved);
+                        }
+                    }
+                    
+                    // 发送结果给 Swift
+                    if (urls.size > 0) {
+                        window.webkit.messageHandlers.htmlScanner.postMessage({
+                            type: 'scanResult',
+                            urls: Array.from(urls)
+                        });
+                    }
+                };
+            })();
+            """
+
+        let script = WKUserScript(
+            source: scriptSource,
+            injectionTime: .atDocumentEnd,
+            forMainFrameOnly: false
+        )
+
+        userContentController.addUserScript(script)
+        userContentController.add(self, name: "htmlScanner")
     }
 
     private func detectFormatByExtension(_ url: URL) -> VideoFormat? {
@@ -306,6 +418,8 @@ final class URLSnifferManager: NSObject, ObservableObject {
 
         interceptedURLs.insert(video.url.absoluteString)
 
+        print("🔍 识别到视频: \(video.url.absoluteString) (\(video.format.rawValue)格式)")
+
         if !sniffedVideos.contains(video) {
             sniffedVideos.insert(video, at: 0)
         }
@@ -319,13 +433,25 @@ extension URLSnifferManager: WKScriptMessageHandler {
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
-        guard message.name == "videoSniffer" else { return }
-
-        if let body = message.body as? [String: Any],
-            let urlString = body["url"] as? String,
-            let url = URL(string: urlString)
-        {
-            checkAndSniffURL(url)
+        if message.name == "videoSniffer" {
+            if let body = message.body as? [String: Any],
+                let urlString = body["url"] as? String,
+                let url = URL(string: urlString)
+            {
+                checkAndSniffURL(url)
+            }
+        } else if message.name == "htmlScanner" {
+            if let body = message.body as? [String: Any],
+                body["type"] as? String == "scanResult",
+                let urlStrings = body["urls"] as? [String]
+            {
+                for urlString in urlStrings {
+                    if let url = URL(string: urlString) {
+                        print("🔍 HTML 扫描发现: \(url.absoluteString)")
+                        checkAndSniffURL(url)
+                    }
+                }
+            }
         }
     }
 }

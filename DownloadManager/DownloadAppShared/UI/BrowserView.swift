@@ -303,6 +303,11 @@ import WebKit
                     self.viewModel.canGoForward = webView.canGoForward
                     self.viewModel.currentURL = webView.url
                     self.viewModel.loadProgress = 1.0
+
+                    // 延迟一点时间，确保页面完全加载
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.viewModel.scanHTMLForVideos()
+                    }
                 }
             }
 
@@ -596,6 +601,11 @@ import WebKit
                     self.viewModel.canGoForward = webView.canGoForward
                     self.viewModel.currentURL = webView.url
                     self.viewModel.loadProgress = 1.0
+
+                    // 延迟一点时间，确保页面完全加载
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.viewModel.scanHTMLForVideos()
+                    }
                 }
             }
 

@@ -152,6 +152,11 @@ class BrowserViewModel: ObservableObject {
         snifferManager.configureWebView(webView)
     }
 
+    func scanHTMLForVideos() {
+        guard let webView = webView else { return }
+        snifferManager.scanHTMLForVideos(in: webView)
+    }
+
     // MARK: - Private Methods
 
     private func buildURL(from string: String) -> URL? {
