@@ -388,7 +388,11 @@ struct M3U8DownloadDetailView: View {
         }
         .padding(16)
         .sheet(isPresented: $showShareSheet) {
-            ActivityView(activityItems: [fileURL])
+            #if os(macOS)
+                ActivityView(activityItems: [fileURL], onComplete: { showShareSheet = false })
+            #else
+                ActivityView(activityItems: [fileURL])
+            #endif
         }
         .alert("文件不存在", isPresented: $showFileNotFoundAlert) {
             Button("确定", role: .cancel) {}

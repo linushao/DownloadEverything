@@ -71,7 +71,11 @@ struct DownloadListView: View {
                         .presentationDragIndicator(.visible)
                 }
                 .sheet(item: $shareURL) { url in
-                    ActivityView(activityItems: [url])
+                    #if os(macOS)
+                        ActivityView(activityItems: [url], onComplete: { shareURL = nil })
+                    #else
+                        ActivityView(activityItems: [url])
+                    #endif
                 }
                 .sheet(
                     isPresented: .init(
@@ -226,7 +230,11 @@ struct DownloadListView: View {
             }
         }
         .sheet(item: $shareURL) { url in
-            ActivityView(activityItems: [url])
+            #if os(macOS)
+                ActivityView(activityItems: [url], onComplete: { shareURL = nil })
+            #else
+                ActivityView(activityItems: [url])
+            #endif
         }
         .sheet(
             isPresented: .init(

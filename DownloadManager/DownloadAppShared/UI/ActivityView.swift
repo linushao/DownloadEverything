@@ -11,6 +11,7 @@ struct ActivityView: View {
     let applicationActivities: [Any]?
     let excludedActivityTypes: [Any]?
     let highlightAirDrop: Bool
+    let onComplete: (() -> Void)?
 
     @State private var isPresented = false
 
@@ -18,12 +19,14 @@ struct ActivityView: View {
         activityItems: [Any],
         applicationActivities: [Any]? = nil,
         excludedActivityTypes: [Any]? = nil,
-        highlightAirDrop: Bool = true
+        highlightAirDrop: Bool = true,
+        onComplete: (() -> Void)? = nil
     ) {
         self.activityItems = activityItems
         self.applicationActivities = applicationActivities
         self.excludedActivityTypes = excludedActivityTypes
         self.highlightAirDrop = highlightAirDrop
+        self.onComplete = onComplete
     }
 
     var body: some View {
@@ -35,12 +38,36 @@ struct ActivityView: View {
                 highlightAirDrop: highlightAirDrop
             )
         #else
-            Button(action: {
-                showSharePanel()
-            }) {
-                Image(systemName: "square.and.arrow.up")
-                    .foregroundColor(.blue)
+            VStack(spacing: 20) {
+                Text("分享文件")
+                    .font(.headline)
+
+                if let url = activityItems.first as? URL, url.isFileURL {
+                    Text(url.lastPathComponent)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                HStack(spacing: 16) {
+                    Button {
+                        showSharePanel()
+                    } label: {
+                        Label("导出", systemImage: "square.and.arrow.up")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button {
+                        onComplete?()
+                    } label: {
+                        Text("取消")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                }
             }
+            .padding(24)
+            .frame(width: 300)
         #endif
     }
 
@@ -60,6 +87,7 @@ struct ActivityView: View {
                                 print("文件复制失败: \(error)")
                             }
                         }
+                        onComplete?()
                     }
                     break
                 }
@@ -120,8 +148,7 @@ struct ActivityView: View {
         }
 
         func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context)
-        {
-        }
+        {}
     }
 #endif
 

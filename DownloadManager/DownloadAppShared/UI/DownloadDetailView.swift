@@ -319,7 +319,11 @@ struct DownloadDetailView: View {
         }
         .padding(16)
         .sheet(isPresented: $showShareSheet) {
+            #if os(macOS)
+            ActivityView(activityItems: [task.fileURL], onComplete: { showShareSheet = false })
+            #else
             ActivityView(activityItems: [task.fileURL])
+            #endif
         }
         .alert("文件不存在", isPresented: $showFileNotFoundAlert) {
             Button("确定", role: .cancel) {}

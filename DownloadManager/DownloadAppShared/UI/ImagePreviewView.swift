@@ -66,7 +66,11 @@ private struct ShareButton: View {
             Label("分享", systemImage: "square.and.arrow.up")
         }
         .sheet(isPresented: $showShareSheet) {
+            #if os(macOS)
+            ActivityView(activityItems: [url], onComplete: { showShareSheet = false })
+            #else
             ActivityView(activityItems: [url])
+            #endif
         }
     }
 }
