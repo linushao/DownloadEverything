@@ -71,8 +71,8 @@ final class DownloadListViewModel: ObservableObject {
     }
 
     /// 删除任务
-    func removeTask(_ task: DownloadTask) {
-        _ = downloadManager.removeTask(taskId: task.taskId)
+    func removeTask(_ task: DownloadTask, deleteOriginalFile: Bool = true) {
+        _ = downloadManager.removeTask(taskId: task.taskId, deleteOriginalFile: deleteOriginalFile)
         loadTasks()
     }
 
@@ -147,8 +147,8 @@ final class DownloadListViewModel: ObservableObject {
     }
 
     /// 删除m3u8任务
-    func removeM3U8Task(_ task: M3U8DownloadTask) {
-        downloadManager.removeM3U8Task(taskId: task.taskId)
+    func removeM3U8Task(_ task: M3U8DownloadTask, deleteOriginalFile: Bool = true) {
+        downloadManager.removeM3U8Task(taskId: task.taskId, deleteOriginalFile: deleteOriginalFile)
         loadTasks()
     }
 

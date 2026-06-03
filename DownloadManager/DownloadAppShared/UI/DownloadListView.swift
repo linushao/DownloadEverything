@@ -141,8 +141,8 @@ struct DownloadListView: View {
                 onPause: { viewModel.pauseTask(task) },
                 onResume: { viewModel.resumeTask(task) },
                 onCancel: { viewModel.cancelTask(task) },
-                onRemove: {
-                    viewModel.removeTask(task)
+                onRemove: { deleteFile in
+                    viewModel.removeTask(task, deleteOriginalFile: deleteFile)
                     selectedTask = nil
                 },
                 onDismiss: { selectedTask = nil },
@@ -154,8 +154,8 @@ struct DownloadListView: View {
                 onPause: { viewModel.pauseM3U8Task(task) },
                 onResume: { viewModel.resumeM3U8Task(task) },
                 onCancel: { viewModel.cancelM3U8Task(task) },
-                onRemove: {
-                    viewModel.removeM3U8Task(task)
+                onRemove: { deleteFile in
+                    viewModel.removeM3U8Task(task, deleteOriginalFile: deleteFile)
                     selectedM3U8Task = nil
                 },
                 onDismiss: { selectedM3U8Task = nil }
@@ -207,7 +207,9 @@ struct DownloadListView: View {
                     onPause: { viewModel.pauseTask(task) },
                     onResume: { viewModel.resumeTask(task) },
                     onCancel: { viewModel.cancelTask(task) },
-                    onRemove: { viewModel.removeTask(task) },
+                    onRemove: { deleteFile in
+                        viewModel.removeTask(task, deleteOriginalFile: deleteFile)
+                    },
                     onDismiss: { showDetailSheet = false },
                     onRestart: { viewModel.restartTask(task) }
                 )
@@ -222,7 +224,9 @@ struct DownloadListView: View {
                     onPause: { viewModel.pauseM3U8Task(task) },
                     onResume: { viewModel.resumeM3U8Task(task) },
                     onCancel: { viewModel.cancelM3U8Task(task) },
-                    onRemove: { viewModel.removeM3U8Task(task) },
+                    onRemove: { deleteFile in
+                        viewModel.removeM3U8Task(task, deleteOriginalFile: deleteFile)
+                    },
                     onDismiss: { showM3U8DetailSheet = false }
                 )
                 .presentationDetents([.medium, .large])
@@ -355,7 +359,9 @@ struct DownloadListView: View {
                             onPause: { viewModel.pauseTask(task) },
                             onResume: { viewModel.resumeTask(task) },
                             onCancel: { viewModel.cancelTask(task) },
-                            onRemove: { viewModel.removeTask(task) },
+                            onRemove: { deleteFile in
+                                viewModel.removeTask(task, deleteOriginalFile: deleteFile)
+                            },
                             onShare: task.status == .completed
                                 ? {
                                     if task.fileExists {
@@ -398,7 +404,9 @@ struct DownloadListView: View {
                             onPause: { viewModel.pauseM3U8Task(task) },
                             onResume: { viewModel.resumeM3U8Task(task) },
                             onCancel: { viewModel.cancelM3U8Task(task) },
-                            onRemove: { viewModel.removeM3U8Task(task) },
+                            onRemove: { deleteFile in
+                                viewModel.removeM3U8Task(task, deleteOriginalFile: deleteFile)
+                            },
                             onShare: task.status == .completed
                                 ? {
                                     let fileURL = task.savePath.appendingPathComponent(

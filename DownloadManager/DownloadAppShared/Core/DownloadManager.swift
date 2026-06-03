@@ -144,13 +144,16 @@ public final class DownloadManager: NSObject, ObservableObject {
     }
 
     /// 移除下载任务
-    public func removeTask(taskId: UUID) -> Bool {
+    public func removeTask(taskId: UUID, deleteOriginalFile: Bool = true) -> Bool {
         var result = false
 
         queue.sync {
             if let index = tasks.firstIndex(where: { $0.taskId == taskId }) {
                 let task = tasks[index]
                 task.cancel()
+                if deleteOriginalFile {
+                    task.deleteLocalCache()
+                }
                 tasks.remove(at: index)
                 activeTasks.removeValue(forKey: taskId)
                 repository.deleteDownloadTask(taskId: taskId)
@@ -629,14 +632,23 @@ extension DownloadManager {
     }
 
     /// 取消M3U8任务
-    /// - Parameter taskId: 任务ID
-    public func cancelM3U8Task(taskId: UUID) {
+    /// - Parameters:
+    ///   - taskId: 任务ID
+    ///   - deleteOriginalFile: 是否删除原文件
+    public func cancelM3U8Task(taskId: UUID, deleteOriginalFile: Bool = true) {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
 
             if let index = self.m3u8Tasks.firstIndex(where: { $0.taskId == taskId }) {
                 let task = self.m3u8Tasks[index]
                 self.m3u8Downloader.cancel(task: task)
+                task.cleanupTempFiles()
+                if deleteOriginalFile {
+                    let finalFileURL = task.savePath.appendingPathComponent(task.fileName)
+                    if FileManager.default.fileExists(atPath: finalFileURL.path) {
+                        try? FileManager.default.removeItem(at: finalFileURL)
+                    }
+                }
                 self.repository.deleteDownloadTask(taskId: taskId)
                 self.m3u8Tasks.remove(at: index)
             }
@@ -644,9 +656,11 @@ extension DownloadManager {
     }
 
     /// 移除M3U8任务
-    /// - Parameter taskId: 任务ID
-    public func removeM3U8Task(taskId: UUID) {
-        cancelM3U8Task(taskId: taskId)
+    /// - Parameters:
+    ///   - taskId: 任务ID
+    ///   - deleteOriginalFile: 是否删除原文件
+    public func removeM3U8Task(taskId: UUID, deleteOriginalFile: Bool = true) {
+        cancelM3U8Task(taskId: taskId, deleteOriginalFile: deleteOriginalFile)
     }
 
     // MARK: - SwiftUI Convenience Methods

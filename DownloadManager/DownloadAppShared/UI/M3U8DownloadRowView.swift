@@ -15,11 +15,13 @@ struct M3U8DownloadRowView: View {
     let onPause: () -> Void
     let onResume: () -> Void
     let onCancel: () -> Void
-    let onRemove: () -> Void
+    let onRemove: (Bool) -> Void
     let onShare: (() -> Void)?
     let onDetailTap: (() -> Void)?
 
     @State private var isHovering: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
+    @State private var deleteOriginalFile: Bool = false
 
     // MARK: - Computed Properties
 
@@ -68,7 +70,7 @@ struct M3U8DownloadRowView: View {
         onPause: @escaping () -> Void,
         onResume: @escaping () -> Void,
         onCancel: @escaping () -> Void,
-        onRemove: @escaping () -> Void,
+        onRemove: @escaping (Bool) -> Void,
         onShare: (() -> Void)? = nil,
         onDetailTap: (() -> Void)? = nil
     ) {
@@ -94,7 +96,9 @@ struct M3U8DownloadRowView: View {
             Spacer()
 
             // 进度和状态
-            if task.status == .downloadingSegments || task.status == .merging || task.status == .paused {
+            if task.status == .downloadingSegments || task.status == .merging
+                || task.status == .paused
+            {
                 progressSection
             } else {
                 statusBadge
@@ -128,7 +132,7 @@ struct M3U8DownloadRowView: View {
                     .font(.system(size: 14, weight: .medium))
                     .lineLimit(1)
                     .truncationMode(.middle)
-                
+
                 Text("HLS")
                     .font(.system(size: 9, weight: .bold))
                     .foregroundColor(.white)
@@ -216,7 +220,9 @@ struct M3U8DownloadRowView: View {
             }
 
             // 取消按钮
-            if task.status == .downloadingSegments || task.status == .merging || task.status == .paused || task.status == .pending || task.status == .parsing {
+            if task.status == .downloadingSegments || task.status == .merging
+                || task.status == .paused || task.status == .pending || task.status == .parsing
+            {
                 Button(action: onCancel) {
                     Image(systemName: "xmark")
                         .foregroundColor(.red)
@@ -226,7 +232,7 @@ struct M3U8DownloadRowView: View {
             }
 
             // 删除按钮
-            Button(action: onRemove) {
+            Button(action: { showDeleteConfirmation = true }) {
                 Image(systemName: "trash")
                     .foregroundColor(.red)
             }
@@ -234,6 +240,23 @@ struct M3U8DownloadRowView: View {
             .platformHelp("删除")
         }
         .font(.system(size: 14))
+        .alert("确认删除", isPresented: $showDeleteConfirmation) {
+            Button("取消", role: .cancel) {
+                deleteOriginalFile = false
+            }
+            Button("删除", role: .destructive) {
+                onRemove(deleteOriginalFile)
+                deleteOriginalFile = false
+            }
+        } message: {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("确定要删除任务「\(task.fileName)」吗？此操作不可恢复。")
+                if task.status == .completed {
+                    Toggle("同时删除原文件", isOn: $deleteOriginalFile)
+                        .font(.subheadline)
+                }
+            }
+        }
     }
 
     // MARK: - Helper Methods

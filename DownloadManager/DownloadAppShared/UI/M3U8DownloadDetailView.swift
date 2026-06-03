@@ -15,10 +15,11 @@ struct M3U8DownloadDetailView: View {
     let onPause: () -> Void
     let onResume: () -> Void
     let onCancel: () -> Void
-    let onRemove: () -> Void
+    let onRemove: (Bool) -> Void
     let onDismiss: () -> Void
 
     @State private var showDeleteConfirmation: Bool = false
+    @State private var deleteOriginalFile: Bool = false
     @State private var showShareSheet: Bool = false
     @State private var showFileNotFoundAlert: Bool = false
 
@@ -167,13 +168,22 @@ struct M3U8DownloadDetailView: View {
             bottomToolbar
         }
         .alert("确认删除", isPresented: $showDeleteConfirmation) {
-            Button("取消", role: .cancel) {}
+            Button("取消", role: .cancel) {
+                deleteOriginalFile = false
+            }
             Button("删除", role: .destructive) {
-                onRemove()
+                onRemove(deleteOriginalFile)
+                deleteOriginalFile = false
                 onDismiss()
             }
         } message: {
-            Text("确定要删除任务「\(task.fileName)」吗？此操作不可恢复。")
+            VStack(alignment: .leading, spacing: 8) {
+                Text("确定要删除任务「\(task.fileName)」吗？此操作不可恢复。")
+                if task.status == .completed {
+                    Toggle("同时删除原文件", isOn: $deleteOriginalFile)
+                        .font(.subheadline)
+                }
+            }
         }
     }
 
