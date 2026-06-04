@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0BC592502FD1B9550099B7EB /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC5924F2FD1B9550099B7EB /* WebView.swift */; };
 		8AF77ABEC55F9CE864B9B3A5 /* Pods_DownloadManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 986AEB27536E4563EB1A7D82 /* Pods_DownloadManager.framework */; };
 		A1B2C3D4E5F6A7B8C9D0E1F15 /* DownloadManagerMac/App.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F10 /* DownloadManagerMac/App.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F16 /* DownloadManagerMac/MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F11 /* DownloadManagerMac/MainView.swift */; };
@@ -38,6 +39,7 @@
 		0B88EC492FC7116A00F9C352 /* DownloadManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DownloadManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B88EC592FC7116C00F9C352 /* DownloadManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DownloadManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B88EC632FC7116C00F9C352 /* DownloadManagerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DownloadManagerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0BC5924F2FD1B9550099B7EB /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WebView.swift; path = DownloadManagerMac/WebView.swift; sourceTree = "<group>"; };
 		0BE12A592FCF05B000EFEFB9 /* DownloadManagerMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DownloadManagerMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A925832CEC7FD31A5A817D1 /* Pods_DownloadManagerMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DownloadManagerMac.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E8921648ED0209953A7C987 /* Pods-DownloadManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DownloadManager.debug.xcconfig"; path = "Target Support Files/Pods-DownloadManager/Pods-DownloadManager.debug.xcconfig"; sourceTree = "<group>"; };
@@ -135,6 +137,7 @@
 		0BE12A582FCF05B000EFEFB9 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
+				0BC5924F2FD1B9550099B7EB /* WebView.swift */,
 				A1B2C3D4E5F6A7B8C9D0E1F10 /* DownloadManagerMac/App.swift */,
 				A1B2C3D4E5F6A7B8C9D0E1F11 /* DownloadManagerMac/MainView.swift */,
 				A1B2C3D4E5F6A7B8C9D0E1F12 /* DownloadManagerMac/AddDownloadView.swift */,
@@ -492,6 +495,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0BC592502FD1B9550099B7EB /* WebView.swift in Sources */,
 				A1B2C3D4E5F6A7B8C9D0E1F15 /* DownloadManagerMac/App.swift in Sources */,
 				A1B2C3D4E5F6A7B8C9D0E1F16 /* DownloadManagerMac/MainView.swift in Sources */,
 				A1B2C3D4E5F6A7B8C9D0E1F17 /* DownloadManagerMac/AddDownloadView.swift in Sources */,

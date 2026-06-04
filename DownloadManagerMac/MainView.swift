@@ -34,6 +34,18 @@ struct MainView: View {
                     .foregroundColor(selectedTab == 1 ? .white : .primary)
                 }
 
+                Button(action: { selectedTab = 3 }) {
+                    HStack {
+                        Image(systemName: "globe")
+                        Text("网页浏览")
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(selectedTab == 3 ? Color.accentColor : Color.clear)
+                    .foregroundColor(selectedTab == 3 ? .white : .primary)
+                }
+
                 Divider()
 
                 Button(action: { showAddDownload = true }) {
@@ -92,6 +104,8 @@ struct MainView: View {
                     DownloadListView()
                 } else if selectedTab == 1 {
                     FileExplorerView()
+                } else if selectedTab == 3 {
+                    WebView()
                 } else {
                     SettingsView()
                 }
@@ -114,6 +128,8 @@ struct MainView: View {
             return "文件管理"
         case 2:
             return "设置"
+        case 3:
+            return "网页浏览"
         default:
             return ""
         }
