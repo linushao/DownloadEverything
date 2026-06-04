@@ -1,0 +1,102 @@
+name: DownloadManager
+
+options:
+  bundleIdPrefix: com.acewei
+  deploymentTarget:
+    iOS: 15.0
+    macOS: 15.0
+
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    MARKETING_VERSION: 1.0
+    CURRENT_PROJECT_VERSION: 1
+    DEVELOPMENT_TEAM: 466HP24FN5
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  DownloadManager:
+    type: application
+    platform: iOS
+    deploymentTarget: 15.0
+    sources:
+      - path: DownloadManager
+        excludes:
+          - "Preview Content/**"
+      - path: DownloadManager/DownloadAppShared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.acewei.DownloadManager
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        ENABLE_PREVIEWS: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        DEVELOPMENT_ASSET_PATHS: '"DownloadManager/Preview Content"'
+        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "需要访问相册来分享照片和视频"
+        INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: "需要访问相册来保存照片和视频"
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+
+  DownloadManagerMac:
+    type: application
+    platform: macOS
+    deploymentTarget: 15.0
+    sources:
+      - path: DownloadManagerMac
+      - path: DownloadManager/DownloadAppShared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.acewei.DownloadManagerMac
+        GENERATE_INFOPLIST_FILE: YES
+        ENABLE_PREVIEWS: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+
+  DownloadManagerTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: 15.0
+    sources:
+      - path: DownloadManagerTests
+    dependencies:
+      - target: DownloadManager
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.acewei.DownloadManagerTests
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/DownloadManager.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DownloadManager"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        GENERATE_INFOPLIST_FILE: YES
+
+  DownloadManagerUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: 15.0
+    sources:
+      - path: DownloadManagerUITests
+    dependencies:
+      - target: DownloadManager
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.acewei.DownloadManagerUITests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: DownloadManager
+
+schemes:
+  DownloadManager:
+    build:
+      targets:
+        DownloadManager: all
+    test:
+      targets:
+        - DownloadManagerTests
+        - DownloadManagerUITests
+    run:
+      config: Debug
+
+  DownloadManagerMac:
+    build:
+      targets:
+        DownloadManagerMac: all
+    run:
+      config: Debug
