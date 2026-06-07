@@ -14,6 +14,118 @@ struct WebView: View {
 
     private let webView: WKWebView = {
         let configuration = WKWebViewConfiguration()
+
+        let observerScript = """
+            (function() {
+                var videoExtensions = /\\.(mp4|m3u8|webm|mov|flv|avi|wmv|m4v)$/i;
+                var detectedVideos = new Set();
+                
+                function isVideoURL(url) {
+                    return videoExtensions.test(url);
+                }
+                
+                function extractVideosFromElement(element) {
+                    var videos = [];
+                    
+                    if (element.tagName === 'VIDEO') {
+                        var src = element.src || '';
+                        var title = element.title || element.getAttribute('data-title') || '';
+                        var poster = element.poster || '';
+                        if (src && !detectedVideos.has(src)) {
+                            detectedVideos.add(src);
+                            videos.push({ url: src, title: title, thumbnail: poster });
+                        }
+                        
+                        var sources = element.getElementsByTagName('source');
+                        for (var j = 0; j < sources.length; j++) {
+                            var sourceSrc = sources[j].src || '';
+                            if (sourceSrc && !detectedVideos.has(sourceSrc)) {
+                                detectedVideos.add(sourceSrc);
+                                videos.push({ url: sourceSrc, title: title || 'Video', thumbnail: poster });
+                            }
+                        }
+                    }
+                    
+                    if (element.tagName === 'SOURCE' && element.type && element.type.indexOf('video') !== -1) {
+                        var mediaSrc = element.src || '';
+                        if (mediaSrc && !detectedVideos.has(mediaSrc)) {
+                            detectedVideos.add(mediaSrc);
+                            var parentTitle = element.parentElement?.title || '';
+                            videos.push({ url: mediaSrc, title: parentTitle || 'Video', thumbnail: '' });
+                        }
+                    }
+                    
+                    if (element.tagName === 'A' && element.href) {
+                        var linkHref = element.href || '';
+                        if (isVideoURL(linkHref) && !detectedVideos.has(linkHref)) {
+                            detectedVideos.add(linkHref);
+                            var linkText = element.textContent || element.title || '';
+                            videos.push({ url: linkHref, title: linkText || 'Video', thumbnail: '' });
+                        }
+                    }
+                    
+                    for (var n = 0; n < element.attributes.length; n++) {
+                        var attr = element.attributes[n];
+                        var attrValue = attr.value || '';
+                        if (attrValue.indexOf('http') === 0 && isVideoURL(attrValue) && !detectedVideos.has(attrValue)) {
+                            detectedVideos.add(attrValue);
+                            var elementTitle = element.title || element.textContent || '';
+                            videos.push({ url: attrValue, title: elementTitle || 'Video', thumbnail: '' });
+                        }
+                    }
+                    
+                    return videos;
+                }
+                
+                function processNode(node) {
+                    var allVideos = [];
+                    
+                    if (node.nodeType === 1) {
+                        var videosFromNode = extractVideosFromElement(node);
+                        allVideos = allVideos.concat(videosFromNode);
+                        
+                        var children = node.querySelectorAll('video, source[type*="video"], a[href]');
+                        for (var i = 0; i < children.length; i++) {
+                            var childVideos = extractVideosFromElement(children[i]);
+                            allVideos = allVideos.concat(childVideos);
+                        }
+                    }
+                    
+                    if (allVideos.length > 0) {
+                        window.webkit.messageHandlers.videoExtractor.postMessage(allVideos);
+                    }
+                }
+                
+                var observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            processNode(node);
+                        });
+                        
+                        if (mutation.type === 'attributes') {
+                            processNode(mutation.target);
+                        }
+                    });
+                });
+                
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['src', 'href', 'data-src', 'data-href']
+                });
+                
+                processNode(document.body);
+            })();
+            """
+
+        let userScript = WKUserScript(
+            source: observerScript,
+            injectionTime: .atDocumentEnd,
+            forMainFrameOnly: true
+        )
+        configuration.userContentController.addUserScript(userScript)
+
         return WKWebView(frame: .zero, configuration: configuration)
     }()
 
@@ -75,6 +187,13 @@ struct WebView: View {
                     onVideosExtracted: { newVideos in
                         videos = newVideos
                         isExtracting = false
+                    },
+                    onNewVideosFound: { newVideos in
+                        for video in newVideos {
+                            if !videos.contains(where: { $0.url == video.url }) {
+                                videos.append(video)
+                            }
+                        }
                     }
                 )
                 .edgesIgnoringSafeArea(.bottom)
@@ -84,7 +203,8 @@ struct WebView: View {
                 videos: $videos,
                 isExpanded: $showVideoPanel,
                 onCopyLink: copyVideoLink,
-                onDownload: downloadVideo
+                onDownload: downloadVideo,
+                onClear: clearVideoList
             )
             .frame(width: 320)
             .disabled(isExtracting)
@@ -138,7 +258,7 @@ struct WebView: View {
 
     private func startPolling() {
         stopPolling()
-        pollTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { timer in
+        pollTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { timer in
             guard let pollTimer = self.pollTimer, pollTimer === timer else { return }
             self.extractVideos()
         }
@@ -214,16 +334,33 @@ struct WebView: View {
                     }
                 }
                 
-                window.webkit.messageHandlers.videoExtractor.postMessage(videos);
+                return videos;
             })();
             """
 
         webView.evaluateJavaScript(script) { result, error in
             if let error = error {
                 print("JavaScript execution error: \(error)")
-                DispatchQueue.main.async {
-                    self.isExtracting = false
+            } else if let videosArray = result as? [[String: String]] {
+                let newVideos: [VideoItem] = videosArray.compactMap { videoDict in
+                    guard let urlString = videoDict["url"], let url = URL(string: urlString) else {
+                        return nil
+                    }
+                    let title = videoDict["title"] ?? ""
+                    let thumbnailURL = videoDict["thumbnail"].flatMap { URL(string: $0) }
+                    return VideoItem(url: url, title: title, thumbnailURL: thumbnailURL)
                 }
+
+                DispatchQueue.main.async {
+                    for video in newVideos {
+                        if !self.videos.contains(where: { $0.url == video.url }) {
+                            self.videos.append(video)
+                        }
+                    }
+                }
+            }
+            DispatchQueue.main.async {
+                self.isExtracting = false
             }
         }
     }
@@ -238,6 +375,10 @@ struct WebView: View {
         let savePath = settingsManager.downloadDirectoryURL
         DownloadManager.shared.addTask(url: url, savePath: savePath, fileName: fileName)
     }
+
+    private func clearVideoList() {
+        videos = []
+    }
 }
 
 struct WebKitView: NSViewRepresentable {
@@ -246,6 +387,7 @@ struct WebKitView: NSViewRepresentable {
     @Binding var isLoading: Bool
     var onPageLoaded: (() -> Void)?
     var onVideosExtracted: (([VideoItem]) -> Void)?
+    var onNewVideosFound: (([VideoItem]) -> Void)?
 
     func makeNSView(context: Context) -> WKWebView {
         webView.configuration.userContentController.add(context.coordinator, name: "videoExtractor")
@@ -282,7 +424,7 @@ struct WebKitView: NSViewRepresentable {
             }
 
             DispatchQueue.main.async {
-                self.parent.onVideosExtracted?(videoItems)
+                self.parent.onNewVideosFound?(videoItems)
             }
         }
 

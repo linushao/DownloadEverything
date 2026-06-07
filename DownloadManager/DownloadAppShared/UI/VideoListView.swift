@@ -6,6 +6,7 @@ struct VideoListView: View {
 
     var onCopyLink: (URL) -> Void
     var onDownload: (URL) -> Void
+    var onClear: (() -> Void)?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -30,6 +31,17 @@ struct VideoListView: View {
                 .padding()
 
                 Spacer()
+
+                if !videos.isEmpty {
+                    Button(action: {
+                        onClear?()
+                    }) {
+                        Image(systemName: "trash")
+                    }
+                    .buttonStyle(.bordered)
+                    .help("清除视频列表")
+                    .padding(.trailing, 8)
+                }
             }
             .background(Color(NSColor.controlBackgroundColor))
 
