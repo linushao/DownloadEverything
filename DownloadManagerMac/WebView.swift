@@ -1,18 +1,11 @@
 import SwiftUI
 import WebKit
 
-struct WebView: View {
-    @State private var urlString = "https://www.apple.com"
-    @State private var progress: Double = 0.0
-    @State private var isLoading = false
-    @State private var videos: [VideoItem] = []
-    @State private var showVideoPanel = true
-    @State private var isExtracting = false
-    @State private var pollTimer: Timer?
+// MARK: - WebViewManager
+class WebViewManager: ObservableObject {
+    let webView: WKWebView
 
-    @EnvironmentObject var settingsManager: SettingsManager
-
-    private let webView: WKWebView = {
+    init() {
         let configuration = WKWebViewConfiguration()
 
         let observerScript = """
@@ -126,8 +119,24 @@ struct WebView: View {
         )
         configuration.userContentController.addUserScript(userScript)
 
-        return WKWebView(frame: .zero, configuration: configuration)
-    }()
+        self.webView = WKWebView(frame: .zero, configuration: configuration)
+    }
+}
+
+struct WebView: View {
+    @State private var urlString: String
+    @State private var progress: Double = 0.0
+    @State private var isLoading = false
+    @State private var videos: [VideoItem] = []
+    @State private var showVideoPanel = true
+    @State private var isExtracting = false
+    @StateObject private var webViewManager = WebViewManager()
+
+    @EnvironmentObject var settingsManager: SettingsManager
+
+    init() {
+        self._urlString = State(initialValue: SettingsManager.shared.lastWebURL)
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -151,13 +160,13 @@ struct WebView: View {
                         Image(systemName: "arrow.left")
                     }
                     .buttonStyle(.bordered)
-                    .disabled(!webView.canGoBack)
+                    .disabled(!webViewManager.webView.canGoBack)
 
                     Button(action: goForward) {
                         Image(systemName: "arrow.right")
                     }
                     .buttonStyle(.bordered)
-                    .disabled(!webView.canGoForward)
+                    .disabled(!webViewManager.webView.canGoForward)
 
                     Button(action: reload) {
                         Image(systemName: isLoading ? "xmark" : "arrow.clockwise")
@@ -182,7 +191,7 @@ struct WebView: View {
                 }
 
                 WebKitView(
-                    webView: webView, progress: $progress, isLoading: $isLoading,
+                    webView: webViewManager.webView, progress: $progress, isLoading: $isLoading,
                     onPageLoaded: onPageLoaded,
                     onVideosExtracted: { newVideos in
                         videos = newVideos
@@ -218,10 +227,12 @@ struct WebView: View {
     private func loadURL() {
         guard let url = URL(string: urlString) else {
             if let urlWithPrefix = URL(string: "https://\(urlString)") {
+                settingsManager.lastWebURL = "https://\(urlString)"
                 loadURLWithUserAgent(url: urlWithPrefix)
             }
             return
         }
+        settingsManager.lastWebURL = urlString
         loadURLWithUserAgent(url: url)
     }
 
@@ -232,42 +243,26 @@ struct WebView: View {
             request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
         }
         videos = []
-        stopPolling()
-        webView.load(request)
+        webViewManager.webView.load(request)
     }
 
     private func goBack() {
-        webView.goBack()
+        webViewManager.webView.goBack()
     }
 
     private func goForward() {
-        webView.goForward()
+        webViewManager.webView.goForward()
     }
 
     private func reload() {
         if isLoading {
-            webView.stopLoading()
+            webViewManager.webView.stopLoading()
         } else {
-            webView.reload()
+            webViewManager.webView.reload()
         }
     }
 
     private func onPageLoaded() {
-        extractVideos()
-        startPolling()
-    }
-
-    private func startPolling() {
-        stopPolling()
-        pollTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { timer in
-            guard let pollTimer = self.pollTimer, pollTimer === timer else { return }
-            self.extractVideos()
-        }
-    }
-
-    private func stopPolling() {
-        pollTimer?.invalidate()
-        pollTimer = nil
     }
 
     private func extractVideos() {
@@ -339,7 +334,7 @@ struct WebView: View {
             })();
             """
 
-        webView.evaluateJavaScript(script) { result, error in
+        webViewManager.webView.evaluateJavaScript(script) { result, error in
             if let error = error {
                 print("JavaScript execution error: \(error)")
             } else if let videosArray = result as? [[String: String]] {
