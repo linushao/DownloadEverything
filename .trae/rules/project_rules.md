@@ -2,5 +2,6 @@
 alwaysApply: true
 ---
 1. 有疑问先询问，再执行
-2. 修改代码参考 coding_rules.md
-3. 全程中文沟通
+2. 全程中文沟通
+3. 整个项目以iOS16，macos 15.0为目标平台，所有代码用Swift编写
+4. 项目文件通过xcodegen生成，第三方库通过spm管理，不要直接修改 .xcodeproj 文件, 而是修改 project.yml 再使用 scripts/generate-project.sh 脚本生成项目文件。

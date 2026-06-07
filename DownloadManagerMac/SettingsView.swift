@@ -4,6 +4,7 @@ struct SettingsView: View {
     @EnvironmentObject var settingsManager: SettingsManager
 
     @State private var segmentLimitText = "0"
+    @State private var showSuccessMessage = false
 
     var body: some View {
         VStack(spacing: 30) {
@@ -60,6 +61,27 @@ struct SettingsView: View {
                             .font(.footnote)
                     }
                 }
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("User-Agent 设置")
+                            .font(.headline)
+                        if showSuccessMessage {
+                            Text("✓ 已生效")
+                                .foregroundColor(.green)
+                                .font(.footnote)
+                        }
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        UserAgentSection(title: "系统默认", options: [UserAgentManager.shared.defaultOption])
+                        UserAgentSection(title: "iPhone", options: UserAgentManager.shared.iphoneOptions)
+                        UserAgentSection(title: "Android", options: UserAgentManager.shared.androidOptions)
+                        UserAgentSection(title: "桌面端", options: UserAgentManager.shared.desktopOptions)
+                    }
+                }
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
@@ -70,6 +92,34 @@ struct SettingsView: View {
         .padding()
         .onAppear {
             segmentLimitText = String(settingsManager.m3u8SegmentLimit)
+        }
+    }
+
+    private func selectUserAgent(_ option: UserAgentOption) {
+        settingsManager.userAgentId = option.id
+        showSuccessMessage = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            showSuccessMessage = false
+        }
+    }
+
+    private func UserAgentSection(title: String, options: [UserAgentOption]) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            ForEach(options) { option in
+                Button(action: { selectUserAgent(option) }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: settingsManager.userAgentId == option.id ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(settingsManager.userAgentId == option.id ? .accentColor : .secondary)
+                        Text(option.name)
+                            .foregroundColor(.primary)
+                    }
+                    .padding(4)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
         }
     }
 }

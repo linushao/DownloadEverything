@@ -140,7 +140,7 @@ public final class NetworkService: NetworkServiceProtocol {
     /// 发起GET请求
     public func get(url: URL, headers: [String: String]? = nil) async throws -> Data {
         let method = HTTPMethod.get
-        let httpHeaders = HTTPHeaders(headers ?? [:])
+        let httpHeaders = HTTPHeaders(mergedHeaders(with: headers))
 
         return try await withCheckedThrowingContinuation { continuation in
             activeSession.request(url, method: method, headers: httpHeaders)
@@ -176,7 +176,7 @@ public final class NetworkService: NetworkServiceProtocol {
     /// 发起POST请求
     public func post(url: URL, body: Data?, headers: [String: String]? = nil) async throws -> Data {
         let method = HTTPMethod.post
-        var httpHeaders = HTTPHeaders(headers ?? [:])
+        var httpHeaders = HTTPHeaders(mergedHeaders(with: headers))
 
         if body != nil {
             httpHeaders.add(name: "Content-Type", value: "application/json")
@@ -223,7 +223,7 @@ public final class NetworkService: NetworkServiceProtocol {
     /// 发起HEAD请求，获取资源信息但不下载
     public func head(url: URL, headers: [String: String]? = nil) async throws -> [String: String] {
         let method = HTTPMethod.head
-        let httpHeaders = HTTPHeaders(headers ?? [:])
+        let httpHeaders = HTTPHeaders(mergedHeaders(with: headers))
 
         return try await withCheckedThrowingContinuation { continuation in
             activeSession.request(url, method: method, headers: httpHeaders)
@@ -300,6 +300,15 @@ public final class NetworkService: NetworkServiceProtocol {
         }
 
         return error.toNetworkError()
+    }
+
+    private func mergedHeaders(with customHeaders: [String: String]?) -> [String: String] {
+        var headers = customHeaders ?? [:]
+        let userAgent = SettingsManager.shared.currentUserAgent
+        if !userAgent.isEmpty {
+            headers["User-Agent"] = userAgent
+        }
+        return headers
     }
 
     // MARK: - Mock Support for Testing

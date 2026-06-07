@@ -6,7 +6,12 @@ struct WebView: View {
     @State private var progress: Double = 0.0
     @State private var isLoading = false
     
-    private let webView = WKWebView()
+    @EnvironmentObject var settingsManager: SettingsManager
+    
+    private let webView: WKWebView = {
+        let configuration = WKWebViewConfiguration()
+        return WKWebView(frame: .zero, configuration: configuration)
+    }()
     
     var body: some View {
         VStack(spacing: 0) {
@@ -65,13 +70,21 @@ struct WebView: View {
     
     private func loadURL() {
         guard let url = URL(string: urlString) else {
-            // 如果没有http/https前缀，自动添加
             if let urlWithPrefix = URL(string: "https://\(urlString)") {
-                webView.load(URLRequest(url: urlWithPrefix))
+                loadURLWithUserAgent(url: urlWithPrefix)
             }
             return
         }
-        webView.load(URLRequest(url: url))
+        loadURLWithUserAgent(url: url)
+    }
+    
+    private func loadURLWithUserAgent(url: URL) {
+        var request = URLRequest(url: url)
+        let userAgent = settingsManager.currentUserAgent
+        if !userAgent.isEmpty {
+            request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        }
+        webView.load(request)
     }
     
     private func goBack() {
