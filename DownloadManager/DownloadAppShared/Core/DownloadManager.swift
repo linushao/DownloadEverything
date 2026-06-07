@@ -72,16 +72,19 @@ public final class DownloadManager: NSObject, ObservableObject {
         let entities = repository.fetchAllDownloadTasks()
         for entity in entities {
             if entity.isM3U8 {
-                // 加载M3U8任务
+                // 加载M3U8任务（m3u8Tasks不是@Published属性，不需要主线程）
                 if let task = M3U8DownloadTask(entity: entity) {
                     self.m3u8Tasks.append(task)
                 }
             } else {
                 // 加载普通任务
                 let task = DownloadTask(entity: entity)
-                self.tasks.append(task)
                 if task.status == .downloading || task.status == .waiting {
                     task.status = .paused
+                }
+                // @Published 属性必须在主线程更新
+                DispatchQueue.main.async {
+                    self.tasks.append(task)
                 }
             }
         }
@@ -107,9 +110,6 @@ public final class DownloadManager: NSObject, ObservableObject {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
 
-            self.tasks.append(task)
-            self.activeTasks[task.taskId] = task
-
             // 保存到 CoreData
             self.repository.createDownloadTask(
                 taskId: task.taskId,
@@ -122,6 +122,12 @@ public final class DownloadManager: NSObject, ObservableObject {
             let downloadingCount = self.tasks.filter { $0.status == .downloading }.count
             if downloadingCount < self.maxConcurrentTasks {
                 task.start(session: self.urlSession)
+            }
+
+            // @Published 属性必须在主线程更新
+            DispatchQueue.main.async {
+                self.tasks.append(task)
+                self.activeTasks[task.taskId] = task
             }
         }
 
@@ -154,10 +160,14 @@ public final class DownloadManager: NSObject, ObservableObject {
                 if deleteOriginalFile {
                     task.deleteLocalCache()
                 }
-                tasks.remove(at: index)
                 activeTasks.removeValue(forKey: taskId)
                 repository.deleteDownloadTask(taskId: taskId)
                 result = true
+
+                // @Published 属性必须在主线程更新
+                DispatchQueue.main.async {
+                    self.tasks.remove(at: index)
+                }
             }
         }
 
@@ -359,7 +369,10 @@ public final class DownloadManager: NSObject, ObservableObject {
             for task in completedTasks {
                 self.repository.deleteDownloadTask(taskId: task.taskId)
             }
-            self.tasks.removeAll { $0.status == .completed }
+            // @Published 属性必须在主线程更新
+            DispatchQueue.main.async {
+                self.tasks.removeAll { $0.status == .completed }
+            }
         }
     }
 
@@ -371,7 +384,10 @@ public final class DownloadManager: NSObject, ObservableObject {
             for task in failedTasks {
                 self.repository.deleteDownloadTask(taskId: task.taskId)
             }
-            self.tasks.removeAll { $0.status == .failed }
+            // @Published 属性必须在主线程更新
+            DispatchQueue.main.async {
+                self.tasks.removeAll { $0.status == .failed }
+            }
         }
     }
 

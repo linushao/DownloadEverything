@@ -10,7 +10,17 @@ class CoreDataManager {
     private init() {}
 
     lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "DownloadApp")
+        guard let modelURL = Bundle.main.url(forResource: "DownloadApp", withExtension: "momd")
+        else {
+            fatalError("Failed to find Core Data model file")
+        }
+
+        guard let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL) else {
+            fatalError("Failed to load Core Data model")
+        }
+
+        let container = NSPersistentContainer(
+            name: "DownloadApp", managedObjectModel: managedObjectModel)
 
         if CoreDataManager.isTesting {
             let description = NSPersistentStoreDescription()
@@ -68,8 +78,8 @@ class CoreDataManager {
     }
 
     static func resetForTesting() {
-        let context = shared.viewContext
-        let coordinator = shared.persistentContainer.persistentStoreCoordinator
+        let container = shared.persistentContainer
+        let coordinator = container.persistentStoreCoordinator
 
         for store in coordinator.persistentStores {
             try? coordinator.remove(store)
@@ -79,10 +89,13 @@ class CoreDataManager {
         description.type = NSInMemoryStoreType
         description.shouldAddStoreAsynchronously = false
 
-        coordinator.addPersistentStore(with: description) { description, error in
-            if let error = error {
-                print("Failed to add in-memory store: \(error)")
+        do {
+            try coordinator.addPersistentStore(with: description) { desc, error in
             }
+        } catch {
+            print("Failed to add in-memory store: \(error)")
         }
+
+        container.viewContext.reset()
     }
 }

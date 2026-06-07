@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22237" systemVersion="23A344" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="DownloadEntity" representedClassName="DownloadEntity" syncable="YES">
+    <entity name="DownloadEntity" representedClassName="DownloadEntity" syncable="YES" codeGeneration="category">
         <attribute name="taskId" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="url" optional="NO" attributeType="String"/>
         <attribute name="fileName" optional="NO" attributeType="String"/>
@@ -23,7 +23,7 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
-    <entity name="ShareEntity" representedClassName="ShareEntity" syncable="YES">
+    <entity name="ShareEntity" representedClassName="ShareEntity" syncable="YES" codeGeneration="category">
         <attribute name="shareId" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="filePath" optional="NO" attributeType="String"/>
         <attribute name="shareType" optional="NO" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
