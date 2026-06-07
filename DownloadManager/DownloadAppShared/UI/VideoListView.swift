@@ -5,8 +5,9 @@ struct VideoListView: View {
     @Binding var isExpanded: Bool
 
     var onCopyLink: (URL) -> Void
-    var onDownload: (URL) -> Void
+    var onDownload: (URL, String) -> Void
     var onClear: (() -> Void)?
+    var onRefresh: (() -> Void)?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,6 +34,15 @@ struct VideoListView: View {
                 Spacer()
 
                 if !videos.isEmpty {
+                    Button(action: {
+                        onRefresh?()
+                    }) {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .buttonStyle(.bordered)
+                    .help("刷新视频列表")
+                    .padding(.trailing, 8)
+
                     Button(action: {
                         onClear?()
                     }) {
@@ -87,9 +97,11 @@ struct VideoListView: View {
 struct VideoItemRow: View {
     let video: VideoItem
     var onCopyLink: (URL) -> Void
-    var onDownload: (URL) -> Void
+    var onDownload: (URL, String) -> Void
 
     @State private var copied = false
+    @State private var showDownloadDialog = false
+    @State private var customFileName = ""
 
     var body: some View {
         HStack(spacing: 12) {
@@ -127,13 +139,25 @@ struct VideoItemRow: View {
                 .help("复制链接")
 
                 Button(action: {
-                    onDownload(video.url)
+                    customFileName = video.title.isEmpty ? video.url.lastPathComponent : video.title
+                    showDownloadDialog = true
                 }) {
                     Image(systemName: "arrow.down.to.line")
                         .font(.title2)
                 }
                 .buttonStyle(.bordered)
                 .help("下载视频")
+                .alert("下载视频", isPresented: $showDownloadDialog) {
+                    TextField("文件名", text: $customFileName)
+                    Button("取消", role: .cancel) {}
+                    Button("下载") {
+                        if !customFileName.isEmpty {
+                            onDownload(video.url, customFileName)
+                        }
+                    }
+                } message: {
+                    Text("请输入保存的文件名")
+                }
             }
         }
         .padding(8)
@@ -156,7 +180,7 @@ extension View {
         ]),
         isExpanded: .constant(true),
         onCopyLink: { _ in },
-        onDownload: { _ in }
+        onDownload: { _, _ in }
     )
     .frame(width: 300, height: 400)
 }

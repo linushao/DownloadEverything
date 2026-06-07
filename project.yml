@@ -24,7 +24,6 @@ targets:
         excludes:
           - "Preview Content/**"
       - path: DownloadManager/DownloadAppShared
-      - path: DownloadManager/DownloadAppShared/Data/DownloadApp.xcdatamodeld
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.acewei.DownloadManager
@@ -47,7 +46,6 @@ targets:
     sources:
       - path: DownloadManagerMac
       - path: DownloadManager/DownloadAppShared
-      - path: DownloadManager/DownloadAppShared/Data/DownloadApp.xcdatamodeld
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.acewei.DownloadManagerMac

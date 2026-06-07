@@ -4,6 +4,7 @@
 //
 //
 
+
 import Foundation
 
 // MARK: - M3U8DownloadStatus
@@ -100,37 +101,6 @@ public final class M3U8DownloadTask: Identifiable, ObservableObject {
             taskId.uuidString, isDirectory: true)
         self.createdAt = Date()
         self.updatedAt = Date()
-    }
-
-    /// 从CoreData实体初始化
-    public init?(entity: DownloadEntity) {
-        // 验证URL
-        guard let url = URL(string: entity.url) else {
-            return nil
-        }
-
-        self.taskId = entity.taskId
-        self.url = url
-        self.savePath = URL(fileURLWithPath: entity.savePath)
-        self.fileName =
-            entity.fileName.isEmpty
-            ? url.lastPathComponent.replacingOccurrences(of: ".m3u8", with: ".mp4")
-            : entity.fileName
-        self.tempDirectory = FileUtils.shared.temporaryDirectory.appendingPathComponent(
-            entity.taskId.uuidString, isDirectory: true)
-        self.createdAt = entity.createdAt
-        self.updatedAt = entity.updatedAt
-
-        // 恢复状态
-        self.status = M3U8DownloadStatus(rawValue: entity.status) ?? .pending
-        self.downloadedSegments = Int(entity.downloadedSegments)
-        self.totalSegments = Int(entity.segmentCount)
-        self.speed = entity.speed
-
-        // 恢复临时目录
-        if let tempDirString = entity.tempDirectory {
-            self.tempDirectory = URL(fileURLWithPath: tempDirString)
-        }
     }
 
     // MARK: - Public Methods

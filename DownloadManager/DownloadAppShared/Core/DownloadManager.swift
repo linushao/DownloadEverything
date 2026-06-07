@@ -54,7 +54,6 @@ public final class DownloadManager: NSObject, ObservableObject {
     private var activeTasks: [UUID: DownloadTask] = [:]
     private let queue = DispatchQueue(
         label: "com.downloadapp.downloadmanager", attributes: .concurrent)
-    private let repository = DownloadRepository()
 
     // MARK: - Initialization
 
@@ -64,30 +63,6 @@ public final class DownloadManager: NSObject, ObservableObject {
         config.timeoutIntervalForRequest = 60
         config.timeoutIntervalForResource = 60 * 60 * 24  // 24小时
         urlSession = URLSession(configuration: config, delegate: self, delegateQueue: nil)
-        loadTasksFromCoreData()
-    }
-
-    /// 从CoreData加载保存的任务
-    private func loadTasksFromCoreData() {
-        let entities = repository.fetchAllDownloadTasks()
-        for entity in entities {
-            if entity.isM3U8 {
-                // 加载M3U8任务（m3u8Tasks不是@Published属性，不需要主线程）
-                if let task = M3U8DownloadTask(entity: entity) {
-                    self.m3u8Tasks.append(task)
-                }
-            } else {
-                // 加载普通任务
-                let task = DownloadTask(entity: entity)
-                if task.status == .downloading || task.status == .waiting {
-                    task.status = .paused
-                }
-                // @Published 属性必须在主线程更新
-                DispatchQueue.main.async {
-                    self.tasks.append(task)
-                }
-            }
-        }
     }
 
     // MARK: - Public Methods
@@ -110,14 +85,6 @@ public final class DownloadManager: NSObject, ObservableObject {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
 
-            // 保存到 CoreData
-            self.repository.createDownloadTask(
-                taskId: task.taskId,
-                url: task.url.absoluteString,
-                fileName: task.fileName,
-                savePath: task.savePath.path
-            )
-
             // 检查并发数限制并自动开始下载
             let downloadingCount = self.tasks.filter { $0.status == .downloading }.count
             if downloadingCount < self.maxConcurrentTasks {
@@ -137,18 +104,6 @@ public final class DownloadManager: NSObject, ObservableObject {
         return task.taskId
     }
 
-    /// 同步任务状态到 CoreData
-    private func syncTaskToCoreData(_ task: DownloadTask) {
-        repository.updateDownloadTask(
-            taskId: task.taskId,
-            totalBytes: task.totalBytes,
-            downloadedBytes: task.downloadedBytes,
-            status: task.status.rawValue,
-            speed: task.speed,
-            resumeData: task.getResumeData()
-        )
-    }
-
     /// 移除下载任务
     public func removeTask(taskId: UUID, deleteOriginalFile: Bool = true) -> Bool {
         var result = false
@@ -161,7 +116,6 @@ public final class DownloadManager: NSObject, ObservableObject {
                     task.deleteLocalCache()
                 }
                 activeTasks.removeValue(forKey: taskId)
-                repository.deleteDownloadTask(taskId: taskId)
                 result = true
 
                 // @Published 属性必须在主线程更新
@@ -181,7 +135,6 @@ public final class DownloadManager: NSObject, ObservableObject {
         queue.sync {
             if let task = tasks.first(where: { $0.taskId == taskId }) {
                 task.pause()
-                syncTaskToCoreData(task)
                 result = true
             }
         }
@@ -203,12 +156,10 @@ public final class DownloadManager: NSObject, ObservableObject {
             guard downloadingCount < maxConcurrentTasks else {
                 // 达到并发限制，设置为等待状态
                 task.status = .waiting
-                syncTaskToCoreData(task)
                 return
             }
 
             task.resume(session: urlSession)
-            syncTaskToCoreData(task)
             result = true
         }
 
@@ -228,12 +179,10 @@ public final class DownloadManager: NSObject, ObservableObject {
             let downloadingCount = tasks.filter { $0.status == .downloading }.count
             guard downloadingCount < maxConcurrentTasks else {
                 task.status = .waiting
-                syncTaskToCoreData(task)
                 return
             }
 
             task.start(session: urlSession)
-            syncTaskToCoreData(task)
             result = true
         }
 
@@ -247,7 +196,6 @@ public final class DownloadManager: NSObject, ObservableObject {
         queue.sync {
             if let task = tasks.first(where: { $0.taskId == taskId }) {
                 task.cancel()
-                syncTaskToCoreData(task)
                 result = true
             }
         }
@@ -267,14 +215,12 @@ public final class DownloadManager: NSObject, ObservableObject {
             task.cancel()
             task.deleteLocalCache()
             task.resetForRetry()
-            syncTaskToCoreData(task)
 
             let downloadingCount = tasks.filter { $0.status == .downloading }.count
             if downloadingCount < maxConcurrentTasks {
                 task.start(session: urlSession)
             } else {
                 task.status = .waiting
-                syncTaskToCoreData(task)
             }
 
             result = true
@@ -365,10 +311,6 @@ public final class DownloadManager: NSObject, ObservableObject {
     public func clearCompletedTasks() {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
-            let completedTasks = self.tasks.filter { $0.status == .completed }
-            for task in completedTasks {
-                self.repository.deleteDownloadTask(taskId: task.taskId)
-            }
             // @Published 属性必须在主线程更新
             DispatchQueue.main.async {
                 self.tasks.removeAll { $0.status == .completed }
@@ -380,10 +322,6 @@ public final class DownloadManager: NSObject, ObservableObject {
     public func clearFailedTasks() {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
-            let failedTasks = self.tasks.filter { $0.status == .failed }
-            for task in failedTasks {
-                self.repository.deleteDownloadTask(taskId: task.taskId)
-            }
             // @Published 属性必须在主线程更新
             DispatchQueue.main.async {
                 self.tasks.removeAll { $0.status == .failed }
@@ -417,7 +355,6 @@ public final class DownloadManager: NSObject, ObservableObject {
             // 如果已达到最大重试次数，标记为失败
             if task.retryCount >= self.maxRetryCount {
                 task.status = .failed
-                self.syncTaskToCoreData(task)
                 task.notifyCompletion(
                     result: .failure(
                         task.lastError
@@ -426,8 +363,6 @@ public final class DownloadManager: NSObject, ObservableObject {
                                 userInfo: [NSLocalizedDescriptionKey: "下载失败"])))
                 return
             }
-
-            self.syncTaskToCoreData(task)
 
             // 延迟重试
             DispatchQueue.main.asyncAfter(deadline: .now() + self.retryDelay) { [weak self] in
@@ -439,7 +374,6 @@ public final class DownloadManager: NSObject, ObservableObject {
 
                     task.resetForRetry()
                     task.resume(session: self.urlSession)
-                    self.syncTaskToCoreData(task)
                 }
             }
         }
@@ -468,7 +402,6 @@ extension DownloadManager: URLSessionDownloadDelegate {
             queue.async(flags: .barrier) {
                 task.status = .completed
                 task.updatedAt = Date()
-                self.syncTaskToCoreData(task)
                 task.notifyCompletion(result: .success(destinationURL))
             }
         } catch {
@@ -476,7 +409,6 @@ extension DownloadManager: URLSessionDownloadDelegate {
                 task.status = .failed
                 task.lastError = error
                 task.updatedAt = Date()
-                self.syncTaskToCoreData(task)
                 task.notifyCompletion(result: .failure(error))
             }
         }
@@ -493,7 +425,6 @@ extension DownloadManager: URLSessionDownloadDelegate {
         queue.async {
             task.updateDownloadedBytes(totalBytesWritten, totalBytes: totalBytesExpectedToWrite)
             task.checkSpeedLimit(maxSpeed: self.speedLimit)
-            self.syncTaskToCoreData(task)
         }
     }
 
@@ -560,24 +491,6 @@ extension DownloadManager {
 
             self.m3u8Tasks.append(task)
 
-            // 保存到CoreData
-            self.repository.createDownloadTask(
-                taskId: task.taskId,
-                url: task.url.absoluteString,
-                fileName: task.fileName,
-                savePath: task.savePath.path,
-                isM3U8: true
-            )
-
-            // 设置进度回调以同步状态
-            task.setProgressHandler { [weak self] progress, downloaded, total in
-                self?.syncM3U8TaskToCoreData(task)
-            }
-
-            task.setCompletionHandler { [weak self] result in
-                self?.syncM3U8TaskToCoreData(task)
-            }
-
             // 开始下载
             Task {
                 await self.m3u8Downloader.start(task: task)
@@ -585,19 +498,6 @@ extension DownloadManager {
         }
 
         return task.taskId
-    }
-
-    /// 同步M3U8任务状态到CoreData
-    private func syncM3U8TaskToCoreData(_ task: M3U8DownloadTask) {
-        repository.updateM3U8Task(
-            taskId: task.taskId,
-            segmentCount: Int64(task.totalSegments),
-            downloadedSegments: Int64(task.downloadedSegments),
-            isMerged: task.status == .completed,
-            tempDirectory: task.tempDirectory.path,
-            status: task.status.rawValue,
-            speed: task.speed
-        )
     }
 
     /// 检查 URL 是否为 M3U8
@@ -630,7 +530,6 @@ extension DownloadManager {
         queue.sync {
             if let task = m3u8Tasks.first(where: { $0.taskId == taskId }) {
                 m3u8Downloader.pause(task: task)
-                syncM3U8TaskToCoreData(task)
             }
         }
     }
@@ -665,7 +564,6 @@ extension DownloadManager {
                         try? FileManager.default.removeItem(at: finalFileURL)
                     }
                 }
-                self.repository.deleteDownloadTask(taskId: taskId)
                 self.m3u8Tasks.remove(at: index)
             }
         }

@@ -1,4 +1,3 @@
-import CoreData
 import Foundation
 
 /// 分享管理器，负责管理文件分享功能
@@ -10,15 +9,13 @@ public final class ShareManager {
 
     // MARK: - Properties
 
-    private let repository: ShareRepository
+    private var shares: [ShareItem] = []
     private let queue = DispatchQueue(
         label: "com.downloadapp.sharemanager", attributes: .concurrent)
 
     // MARK: - Initialization
 
-    private init() {
-        self.repository = ShareRepository()
-    }
+    private init() {}
 
     // MARK: - Public Methods
 
@@ -44,14 +41,7 @@ public final class ShareManager {
         )
 
         queue.async(flags: .barrier) { [weak self] in
-            self?.repository.createShare(
-                shareId: shareItem.shareId,
-                filePath: shareItem.filePath,
-                shareType: shareItem.shareType.rawValue,
-                accessToken: shareItem.accessToken,
-                permission: shareItem.permission.rawValue,
-                expiresAt: shareItem.expiresAt
-            )
+            self?.shares.append(shareItem)
         }
 
         return shareItem
@@ -63,8 +53,7 @@ public final class ShareManager {
         var result: [ShareItem] = []
 
         queue.sync {
-            let entities = repository.fetchAllShares()
-            result = entities.compactMap { ShareItem(entity: $0) }
+            result = shares
         }
 
         return result
@@ -83,9 +72,7 @@ public final class ShareManager {
         var result: ShareItem?
 
         queue.sync {
-            if let entity = repository.fetchShare(by: shareId) {
-                result = ShareItem(entity: entity)
-            }
+            result = shares.first { $0.shareId == shareId }
         }
 
         return result
@@ -97,9 +84,9 @@ public final class ShareManager {
     public func deleteShare(shareId: UUID) -> Bool {
         var result = false
 
-        queue.sync {
-            if repository.fetchShare(by: shareId) != nil {
-                repository.deleteShare(shareId: shareId)
+        queue.sync(flags: .barrier) {
+            if let index = shares.firstIndex(where: { $0.shareId == shareId }) {
+                shares.remove(at: index)
                 result = true
             }
         }
@@ -114,9 +101,7 @@ public final class ShareManager {
         var result = false
 
         queue.sync {
-            if let entity = repository.fetchShare(by: token),
-                let shareItem = ShareItem(entity: entity)
-            {
+            if let shareItem = shares.first(where: { $0.accessToken == token }) {
                 result = shareItem.isValid
             }
         }
@@ -131,9 +116,7 @@ public final class ShareManager {
         var result: ShareItem?
 
         queue.sync {
-            if let entity = repository.fetchShare(by: token) {
-                result = ShareItem(entity: entity)
-            }
+            result = shares.first(where: { $0.accessToken == token })
         }
 
         return result
@@ -180,17 +163,7 @@ public final class ShareManager {
     public func cleanExpiredShares() {
         queue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
-
-            let entities = self.repository.fetchAllShares()
-            for entity in entities {
-                // 直接检查实体是否过期，避免 ShareItem 初始化问题
-                if let expiresAt = entity.expiresAt, Date() > expiresAt {
-                    self.repository.deleteShare(shareId: entity.shareId)
-                }
-            }
-
-            // 强制刷新上下文，确保数据更新
-            self.repository.refresh()
+            self.shares.removeAll { $0.isExpired }
         }
     }
 }

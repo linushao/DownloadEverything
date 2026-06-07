@@ -204,7 +204,8 @@ struct WebView: View {
                 isExpanded: $showVideoPanel,
                 onCopyLink: copyVideoLink,
                 onDownload: downloadVideo,
-                onClear: clearVideoList
+                onClear: clearVideoList,
+                onRefresh: refreshVideoList
             )
             .frame(width: 320)
             .disabled(isExtracting)
@@ -370,10 +371,13 @@ struct WebView: View {
         NSPasteboard.general.setString(url.absoluteString, forType: .string)
     }
 
-    private func downloadVideo(_ url: URL) {
-        let fileName = url.lastPathComponent
+    private func downloadVideo(_ url: URL, _ fileName: String) {
         let savePath = settingsManager.downloadDirectoryURL
         DownloadManager.shared.addTask(url: url, savePath: savePath, fileName: fileName)
+    }
+
+    private func refreshVideoList() {
+        extractVideos()
     }
 
     private func clearVideoList() {

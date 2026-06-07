@@ -69,17 +69,6 @@ public struct ShareItem: Identifiable {
         !isExpired
     }
     
-    /// 从ShareEntity创建
-    public init?(entity: ShareEntity) {
-        self.shareId = entity.shareId
-        self.filePath = entity.filePath
-        self.shareType = ShareType(rawValue: entity.shareType) ?? .file
-        self.accessToken = entity.accessToken
-        self.permission = Permission(rawValue: entity.permission) ?? .readOnly
-        self.expiresAt = entity.expiresAt
-        self.createdAt = entity.createdAt
-    }
-    
     /// 创建新的分享项
     public init(
         shareId: UUID = UUID(),
