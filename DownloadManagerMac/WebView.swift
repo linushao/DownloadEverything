@@ -8,6 +8,16 @@ class WebViewManager: ObservableObject {
     init() {
         let configuration = WKWebViewConfiguration()
 
+        // 注入 M3U8 嗅探脚本（在 document-start 阶段）
+        if let m3u8Script = Self.loadM3U8Script() {
+            let m3u8UserScript = WKUserScript(
+                source: m3u8Script,
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: true
+            )
+            configuration.userContentController.addUserScript(m3u8UserScript)
+        }
+
         let observerScript = """
             (function() {
                 var videoExtensions = /\\.(mp4|m3u8|webm|mov|flv|avi|wmv|m4v)$/i;
@@ -120,6 +130,109 @@ class WebViewManager: ObservableObject {
         configuration.userContentController.addUserScript(userScript)
 
         self.webView = WKWebView(frame: .zero, configuration: configuration)
+    }
+
+    /// 加载 M3U8 嗅探脚本
+    private static func loadM3U8Script() -> String? {
+        // 获取 M3U8.js 文件路径
+        guard
+            let bundlePath = Bundle.main.path(
+                forResource: "M3U8", ofType: "js", inDirectory: "JsScript"),
+            let scriptContent = try? String(contentsOfFile: bundlePath, encoding: .utf8)
+        else {
+            print("无法加载 M3U8.js 脚本")
+            return nil
+        }
+
+        // 提取 JavaScript 代码部分（去掉油猴元数据）
+        let jsCode = extractJSCode(from: scriptContent)
+
+        // 提供油猴 API 的兼容实现
+        let gmAPICompat = generateGMAPICompat()
+
+        return gmAPICompat + "\n" + jsCode
+    }
+
+    /// 从油猴脚本中提取 JavaScript 代码
+    private static func extractJSCode(from scriptContent: String) -> String {
+        // 查找 // ==UserScript== 和 // ==/UserScript== 之间的元数据
+        // 然后提取元数据后的代码
+        let lines = scriptContent.components(separatedBy: "\n")
+        var codeStarted = false
+        var codeLines: [String] = []
+
+        for line in lines {
+            if line.contains("// ==/UserScript==") {
+                codeStarted = true
+                continue
+            }
+            if codeStarted {
+                codeLines.append(line)
+            }
+        }
+
+        return codeLines.joined(separator: "\n")
+    }
+
+    /// 生成油猴 API 的兼容实现
+    private static func generateGMAPICompat() -> String {
+        return """
+            // GM API 兼容层 - 为 WebView 提供油猴脚本 API 支持
+            (function() {
+                // GM_setValue / GM_getValue - 本地存储
+                window.GM_setValue = function(key, value) {
+                    try {
+                        localStorage.setItem('gm_' + key, JSON.stringify(value));
+                    } catch(e) {}
+                };
+                window.GM_getValue = function(key, defaultValue) {
+                    try {
+                        var value = localStorage.getItem('gm_' + key);
+                        return value ? JSON.parse(value) : defaultValue;
+                    } catch(e) {
+                        return defaultValue;
+                    }
+                };
+
+                // GM_setClipboard - 复制到剪贴板
+                window.GM_setClipboard = function(text) {
+                    navigator.clipboard.writeText(text).catch(function(e) {
+                        console.error('复制失败:', e);
+                    });
+                };
+
+                // GM_xmlhttpRequest - 跨域请求
+                window.GM_xmlhttpRequest = function(details) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open(details.method || 'GET', details.url, true);
+
+                    if (details.headers) {
+                        for (var key in details.headers) {
+                            xhr.setRequestHeader(key, details.headers[key]);
+                        }
+                    }
+
+                    xhr.onload = function() {
+                        if (details.onload) {
+                            details.onload({
+                                status: xhr.status,
+                                statusText: xhr.statusText,
+                                responseText: xhr.responseText,
+                                readyState: xhr.readyState
+                            });
+                        }
+                    };
+
+                    xhr.onerror = function() {
+                        if (details.onerror) {
+                            details.onerror({ error: 'Network error' });
+                        }
+                    };
+
+                    xhr.send(details.data || null);
+                };
+            })();
+            """
     }
 }
 
